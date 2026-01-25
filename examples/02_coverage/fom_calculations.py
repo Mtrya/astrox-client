@@ -25,13 +25,11 @@ from astrox.coverage import (
     fom_simple_coverage,
 )
 from astrox.models import (
-    ConicSensor,
     EntityPath,
     J2Position,
 )
 from astrox._models import (
     CoverageGridLatitudeBounds,
-    KeplerElements,
 )
 
 
@@ -57,19 +55,21 @@ def create_constellation():
                 Name=f"Walker-P{plane + 1}S{sat + 1}",
                 Description=f"Plane {plane + 1}, Satellite {sat + 1}",
                 Position=J2Position(
+                    **{'$type': 'J2'},
                     CentralBody="Earth",
                     J2NormalizedValue=0.000484165143790815,
                     RefDistance=6378137.0,
                     OrbitEpoch="2024-01-01T00:00:00.000Z",
+                    CoordSystem="Inertial",
                     CoordType="Classical",
-                    OrbitalElements=KeplerElements(
-                        SemimajorAxis=sma,
-                        Eccentricity=0.001,
-                        Inclination=inclination,
-                        ArgumentOfPeriapsis=0.0,
-                        RightAscensionOfAscendingNode=raan,
-                        TrueAnomaly=true_anomaly,
-                    ),
+                    OrbitalElements=[
+                        sma,           # Semi-major axis (m)
+                        0.001,         # Eccentricity
+                        inclination,   # Inclination (deg)
+                        0.0,           # Argument of periapsis (deg)
+                        raan,          # RAAN (deg)
+                        true_anomaly,  # True anomaly (deg)
+                    ],
                 ),
             )
             satellites.append(satellite)
@@ -98,11 +98,6 @@ def demo_simple_coverage():
         MaxLatitude=60.0,
         Resolution=15.0,  # 15° for faster computation
         Height=0.0,
-    )
-
-    # Sensor
-    sensor = ConicSensor(
-        outerHalfAngle=50.0,  # 50° half-angle
     )
 
     # Example 1: Grid stats (summary statistics)
@@ -466,3 +461,42 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+"""
+Example output (with HTTP 500 server error):
+>>> ======================================================================
+>>> ASTROX FIGURE OF MERIT (FOM) EXAMPLES
+>>> ======================================================================
+>>>
+>>> Demonstrating 5 FOM functions:
+>>>   1. fom_simple_coverage() - Binary coverage indicator
+>>>   2. fom_coverage_time() - Total coverage duration
+>>>   3. fom_number_of_assets() - Simultaneous satellite count
+>>>   4. fom_response_time() - Time to first coverage
+>>>   5. fom_revisit_time() - Gap between passes
+>>>
+>>> ======================================================================
+>>> 1. SIMPLE COVERAGE FOM - Binary Coverage Indicator
+>>> ======================================================================
+>>>
+>>> Returns 1 if grid point is covered, 0 otherwise.
+>>>
+>>> Constellation: 6 satellites (3x2 Walker)
+>>>
+>>> --- Output: grid_stats (summary) ---
+>>> Traceback (most recent call last):
+>>>   File "examples/02_coverage/fom_calculations.py", line 463, in <module>
+>>>     main()
+>>>   File "examples/02_coverage/fom_calculations.py", line 450, in main
+>>>     demo_simple_coverage()
+>>>   File "examples/02_coverage/fom_calculations.py", line 105, in demo_simple_coverage
+>>>     result = fom_simple_coverage(...)
+>>>   File "/home/betelgeuse/Developments/astrox-client/astrox/coverage.py", line 283, in fom_simple_coverage
+>>>     return sess.post(endpoint=endpoint, data=payload)
+>>>   File "/home/betelgeuse/Developments/astrox-client/astrox/_http.py", line 284, in post
+>>>     result = _make_request(...)
+>>>   File "/home/betelgeuse/Developments/astrox-client/astrox/_http.py", line 108, in _make_request
+>>>     raise last_exception
+>>> astrox.exceptions.AstroxHTTPError: HTTP 500: Internal Server Error
+"""

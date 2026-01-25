@@ -14,16 +14,12 @@ from __future__ import annotations
 
 from astrox.coverage import report_coverage_by_asset, report_percent_coverage
 from astrox.models import (
-    ConicSensor,
     EntityPath,
     J2Position,
-    RectangularSensor,
 )
 from astrox._models import (
-    CoverageGridGlobal,
     CoverageGridLatitudeBounds,
     CoverageGridLatLonBounds,
-    KeplerElements,
 )
 
 
@@ -44,19 +40,21 @@ def create_regional_constellation():
             Name=f"Regional-Sat{i + 1}",
             Description=f"Regional satellite {i + 1} (RAAN={raan}°)",
             Position=J2Position(
+                **{'$type': 'J2'},
                 CentralBody="Earth",
                 J2NormalizedValue=0.000484165143790815,
                 RefDistance=6378137.0,
                 OrbitEpoch="2024-01-01T00:00:00.000Z",
+                CoordSystem="Inertial",
                 CoordType="Classical",
-                OrbitalElements=KeplerElements(
-                    SemimajorAxis=sma,
-                    Eccentricity=0.001,
-                    Inclination=30.0,  # Inclined for better regional coverage
-                    ArgumentOfPeriapsis=270.0,
-                    RightAscensionOfAscendingNode=raan,
-                    TrueAnomaly=0.0,
-                ),
+                OrbitalElements=[
+                    sma,        # Semi-major axis (m)
+                    0.001,      # Eccentricity
+                    30.0,       # Inclination (deg)
+                    270.0,      # Argument of periapsis (deg)
+                    raan,       # RAAN (deg)
+                    0.0,        # True anomaly (deg)
+                ],
             ),
         )
         satellites.append(satellite)
@@ -81,19 +79,21 @@ def create_leo_constellation():
                 Name=f"LEO-P{plane + 1}S{sat + 1}",
                 Description=f"LEO Plane {plane + 1}, Sat {sat + 1}",
                 Position=J2Position(
+                    **{'$type': 'J2'},
                     CentralBody="Earth",
                     J2NormalizedValue=0.000484165143790815,
                     RefDistance=6378137.0,
                     OrbitEpoch="2024-01-01T00:00:00.000Z",
+                    CoordSystem="Inertial",
                     CoordType="Classical",
-                    OrbitalElements=KeplerElements(
-                        SemimajorAxis=sma,
-                        Eccentricity=0.001,
-                        Inclination=inclination,
-                        ArgumentOfPeriapsis=0.0,
-                        RightAscensionOfAscendingNode=raan,
-                        TrueAnomaly=ta,
-                    ),
+                    OrbitalElements=[
+                        sma,           # Semi-major axis (m)
+                        0.001,         # Eccentricity
+                        inclination,   # Inclination (deg)
+                        0.0,           # Argument of periapsis (deg)
+                        raan,          # RAAN (deg)
+                        ta,            # True anomaly (deg)
+                    ],
                 ),
             )
             satellites.append(satellite)
@@ -125,14 +125,7 @@ def demo_coverage_by_asset():
         Height=0.0,
     )
 
-    # Wide FOV sensor
-    sensor = ConicSensor(
-        Text="Wide imaging sensor",
-        outerHalfAngle=55.0,  # 55° half-angle
-    )
-
     print(f"\nGrid: ±70° latitude, 20° resolution")
-    print(f"Sensor: Conic 55° half-angle (110° FOV)")
     print(f"Analysis: 12 hours")
     print("\nComputing per-asset coverage statistics...")
 
@@ -344,11 +337,11 @@ def demo_comparison_scenarios():
 
 
 def demo_sensor_impact():
-    """Demonstrate impact of different sensors on coverage statistics."""
+    """Demonstrate coverage statistics for simple constellation."""
     print("\n" + "=" * 70)
-    print("4. SENSOR IMPACT - FOV Effect on Coverage")
+    print("4. SIMPLE CONSTELLATION - Coverage Analysis")
     print("=" * 70)
-    print("\nAnalyzing how sensor field-of-view affects coverage statistics.")
+    print("\nAnalyzing coverage for a simple 3-satellite constellation.")
 
     start_time = "2024-01-01T00:00:00.000Z"
     stop_time = "2024-01-01T06:00:00.000Z"
@@ -360,19 +353,21 @@ def demo_sensor_impact():
             EntityPath(
                 Name=f"Sat{i + 1}",
                 Position=J2Position(
+                    **{'$type': 'J2'},
                     CentralBody="Earth",
                     J2NormalizedValue=0.000484165143790815,
                     RefDistance=6378137.0,
                     OrbitEpoch="2024-01-01T00:00:00.000Z",
+                    CoordSystem="Inertial",
                     CoordType="Classical",
-                    OrbitalElements=KeplerElements(
-                        SemimajorAxis=6378137.0 + 600000.0,
-                        Eccentricity=0.001,
-                        Inclination=55.0,
-                        ArgumentOfPeriapsis=0.0,
-                        RightAscensionOfAscendingNode=i * 120.0,
-                        TrueAnomaly=0.0,
-                    ),
+                    OrbitalElements=[
+                        6378137.0 + 600000.0,  # Semi-major axis (m)
+                        0.001,                 # Eccentricity
+                        55.0,                  # Inclination (deg)
+                        0.0,                   # Argument of periapsis (deg)
+                        i * 120.0,             # RAAN (deg)
+                        0.0,                   # True anomaly (deg)
+                    ],
                 ),
             )
         )
@@ -384,46 +379,27 @@ def demo_sensor_impact():
         Height=0.0,
     )
 
-    # Test different sensor configurations
-    sensor_configs = [
-        ("Narrow FOV (30°)", ConicSensor(outerHalfAngle=15.0)),  # 30° total
-        ("Medium FOV (60°)", ConicSensor(outerHalfAngle=30.0)),  # 60° total
-        ("Wide FOV (100°)", ConicSensor(outerHalfAngle=50.0)),  # 100° total
-        (
-            "Rectangular (45°×45°)",
-            RectangularSensor(xHalfAngle=22.5, yHalfAngle=22.5),
-        ),
-    ]
+    print("\nTesting coverage with same constellation...")
 
-    print("\nTesting 4 sensor configurations with same constellation...")
+    result = report_percent_coverage(
+        start=start_time,
+        stop=stop_time,
+        grid=grid,
+        assets=satellites,
+        step=120.0,
+    )
 
-    for sensor_name, sensor in sensor_configs:
-        print(f"\n--- Sensor: {sensor_name} ---")
+    if result.get("IsSuccess"):
+        instant_data = result.get("InstantaneousPercentCoverages", [])
+        if instant_data:
+            instant_values = [d.get("Value", 0) for d in instant_data]
+            avg_instant = sum(instant_values) / len(instant_values)
+            max_instant = max(instant_values)
 
-        result = report_percent_coverage(
-            start=start_time,
-            stop=stop_time,
-            grid=grid,
-            assets=satellites,
-            # Note: Sensors would be added to satellites' EntityPath definitions
-            # For this demo, we're showing the concept
-            step=120.0,
-        )
-
-        if result.get("IsSuccess"):
-            instant_data = result.get("InstantaneousPercentCoverages", [])
-            if instant_data:
-                instant_values = [d.get("Value", 0) for d in instant_data]
-                avg_instant = sum(instant_values) / len(instant_values)
-                max_instant = max(instant_values)
-
-                print(f"  Average instantaneous coverage: {avg_instant:.2f}%")
-                print(f"  Peak instantaneous coverage: {max_instant:.2f}%")
-        else:
-            print(f"  Error: {result.get('Message', 'Unknown')}")
-
-    print("\nNote: Wider FOV sensors provide higher coverage percentages")
-    print("      but may sacrifice image resolution or data quality.")
+            print(f"  Average instantaneous coverage: {avg_instant:.2f}%")
+            print(f"  Peak instantaneous coverage: {max_instant:.2f}%")
+    else:
+        print(f"  Error: {result.get('Message', 'Unknown')}")
 
 
 def main():
@@ -449,3 +425,43 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+"""
+Example output (with HTTP 500 server error):
+>>> ======================================================================
+>>> ASTROX COVERAGE STATISTICS EXAMPLES
+>>> ======================================================================
+>>>
+>>> Demonstrating coverage reporting functions:
+>>>   - report_coverage_by_asset(): Per-satellite performance
+>>>   - report_percent_coverage(): Overall coverage evolution
+>>>
+>>> ======================================================================
+>>> 1. COVERAGE BY ASSET - Per-Satellite Performance
+>>> ======================================================================
+>>>
+>>> Reports min/max/average/cumulative coverage % for each satellite.
+>>>
+>>> Constellation: 9 satellites (3x3 LEO)
+>>> Altitude: 700 km, Inclination: 60°
+>>>
+>>> Grid: ±70° latitude, 20° resolution
+>>> Analysis: 12 hours
+>>>
+>>> Computing per-asset coverage statistics...
+>>> Traceback (most recent call last):
+>>>   File "examples/02_coverage/coverage_statistics.py", line 427, in <module>
+>>>     main()
+>>>   File "examples/02_coverage/coverage_statistics.py", line 416, in main
+>>>     demo_coverage_by_asset()
+>>>   File "examples/02_coverage/coverage_statistics.py", line 132, in demo_coverage_by_asset
+>>>     result = report_coverage_by_asset(...)
+>>>   File "/home/betelgeuse/Developments/astrox-client/astrox/coverage.py", line 785, in report_coverage_by_asset
+>>>     return sess.post(endpoint="/Coverage/Report/CoverageByAsset", data=payload)
+>>>   File "/home/betelgeuse/Developments/astrox-client/astrox/_http.py", line 284, in post
+>>>     result = _make_request(...)
+>>>   File "/home/betelgeuse/Developments/astrox-client/astrox/_http.py", line 108, in _make_request
+>>>     raise last_exception
+>>> astrox.exceptions.AstroxHTTPError: HTTP 500: Internal Server Error
+"""

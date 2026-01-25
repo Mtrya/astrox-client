@@ -24,7 +24,6 @@ from astrox._models import (
     CoverageGridGlobal,
     CoverageGridLatitudeBounds,
     CoverageGridLatLonBounds,
-    KeplerElements,
 )
 
 
@@ -119,23 +118,26 @@ def demo_compute_coverage():
     satellites = []
 
     # Satellite 1: Sun-synchronous orbit (SSO)
+    # OrbitalElements format: [SemiMajorAxis(m), Eccentricity, Inclination(deg),
+    #                          ArgumentOfPeriapsis(deg), RAAN(deg), TrueAnomaly(deg)]
     sat1 = EntityPath(
         Name="SSO-Sat1",
         Description="Sun-synchronous orbit satellite",
         Position=J2Position(
+            field_type="J2",  # Required discriminator
             CentralBody="Earth",
             J2NormalizedValue=0.000484165143790815,  # Earth's J2
             RefDistance=6378137.0,  # Earth equatorial radius (m)
             OrbitEpoch="2024-01-01T00:00:00.000Z",
             CoordType="Classical",
-            OrbitalElements=KeplerElements(
-                SemimajorAxis=6378137.0 + 800000.0,  # 800 km altitude
-                Eccentricity=0.001,
-                Inclination=98.5,  # Sun-sync inclination
-                ArgumentOfPeriapsis=0.0,
-                RightAscensionOfAscendingNode=0.0,
-                TrueAnomaly=0.0,
-            ),
+            OrbitalElements=[
+                6378137.0 + 800000.0,  # SemiMajorAxis: 800 km altitude
+                0.001,  # Eccentricity
+                98.5,  # Inclination: Sun-sync
+                0.0,  # ArgumentOfPeriapsis
+                0.0,  # RAAN
+                0.0,  # TrueAnomaly
+            ],
         ),
     )
     satellites.append(sat1)
@@ -145,19 +147,20 @@ def demo_compute_coverage():
         Name="SSO-Sat2",
         Description="Sun-synchronous orbit satellite (120° phase)",
         Position=J2Position(
+            field_type="J2",  # Required discriminator
             CentralBody="Earth",
             J2NormalizedValue=0.000484165143790815,
             RefDistance=6378137.0,
             OrbitEpoch="2024-01-01T00:00:00.000Z",
             CoordType="Classical",
-            OrbitalElements=KeplerElements(
-                SemimajorAxis=6378137.0 + 800000.0,
-                Eccentricity=0.001,
-                Inclination=98.5,
-                ArgumentOfPeriapsis=0.0,
-                RightAscensionOfAscendingNode=120.0,  # Phase shift
-                TrueAnomaly=0.0,
-            ),
+            OrbitalElements=[
+                6378137.0 + 800000.0,  # SemiMajorAxis
+                0.001,  # Eccentricity
+                98.5,  # Inclination
+                0.0,  # ArgumentOfPeriapsis
+                120.0,  # RAAN: Phase shift
+                0.0,  # TrueAnomaly
+            ],
         ),
     )
     satellites.append(sat2)
@@ -167,19 +170,20 @@ def demo_compute_coverage():
         Name="SSO-Sat3",
         Description="Sun-synchronous orbit satellite (240° phase)",
         Position=J2Position(
+            field_type="J2",  # Required discriminator
             CentralBody="Earth",
             J2NormalizedValue=0.000484165143790815,
             RefDistance=6378137.0,
             OrbitEpoch="2024-01-01T00:00:00.000Z",
             CoordType="Classical",
-            OrbitalElements=KeplerElements(
-                SemimajorAxis=6378137.0 + 800000.0,
-                Eccentricity=0.001,
-                Inclination=98.5,
-                ArgumentOfPeriapsis=0.0,
-                RightAscensionOfAscendingNode=240.0,  # Phase shift
-                TrueAnomaly=0.0,
-            ),
+            OrbitalElements=[
+                6378137.0 + 800000.0,  # SemiMajorAxis
+                0.001,  # Eccentricity
+                98.5,  # Inclination
+                0.0,  # ArgumentOfPeriapsis
+                240.0,  # RAAN: Phase shift
+                0.0,  # TrueAnomaly
+            ],
         ),
     )
     satellites.append(sat3)
@@ -195,6 +199,7 @@ def demo_compute_coverage():
 
     # Define sensor (wide field-of-view conic sensor)
     sensor = ConicSensor(
+        field_type="Conic",  # Required discriminator
         Text="Wide FOV imaging sensor",
         innerHalfAngle=0.0,  # No inner cone
         outerHalfAngle=60.0,  # 60° half-angle (120° total FOV)
@@ -277,6 +282,7 @@ def demo_coverage_with_constraints():
         Name="ISS",
         Description="International Space Station",
         Position=SGP4Position(
+            field_type="SGP4",  # Required discriminator
             TLEs=[tle_line1, tle_line2],
             SatelliteNumber="25544",
         ),
@@ -343,12 +349,15 @@ def main():
     print("ASTROX COVERAGE ANALYSIS EXAMPLES")
     print("=" * 70)
     print("\nDemonstrating basic coverage functions:")
-    print("  - get_grid_points(): Generate coverage grids")
+    print("  - get_grid_points(): Generate coverage grids [SKIPPED - Server Error 500]")
     print("  - compute_coverage(): Calculate satellite coverage")
     print()
 
     # Run examples
-    demo_get_grid_points()
+    # demo_get_grid_points()  # SKIPPED: HTTP 500 server error - see issues.md
+    print("\nNOTE: get_grid_points() demo skipped due to server-side HTTP 500 error")
+    print("      See examples/02_coverage/issues.md for details\n")
+
     demo_compute_coverage()
     demo_coverage_with_constraints()
 
@@ -359,3 +368,45 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+"""
+Example output (with HTTP 500 server error):
+>>> ======================================================================
+>>> ASTROX COVERAGE ANALYSIS EXAMPLES
+>>> ======================================================================
+>>>
+>>> Demonstrating basic coverage functions:
+>>>   - get_grid_points(): Generate coverage grids [SKIPPED - Server Error 500]
+>>>   - compute_coverage(): Calculate satellite coverage
+>>>
+>>>
+>>> NOTE: get_grid_points() demo skipped due to server-side HTTP 500 error
+>>>       See examples/02_coverage/issues.md for details
+>>>
+>>>
+>>> ======================================================================
+>>> 2. COMPUTE COVERAGE - SATELLITE CONSTELLATION
+>>> ======================================================================
+>>>
+>>> Analyzing coverage from 2024-01-01T00:00:00.000Z to 2024-01-01T12:00:00.000Z
+>>> Constellation: 3 satellites in SSO (800 km, 98.5° inc)
+>>> Sensor: Conic, 60° half-angle (120° FOV)
+>>> Grid: Latitude bounds -60° to 60°, 10° resolution
+>>>
+>>> Computing coverage...
+>>> Traceback (most recent call last):
+>>>   File "examples/02_coverage/basic_coverage.py", line 370, in <module>
+>>>     main()
+>>>   File "examples/02_coverage/basic_coverage.py", line 361, in main
+>>>     demo_compute_coverage()
+>>>   File "examples/02_coverage/basic_coverage.py", line 217, in demo_compute_coverage
+>>>     result = compute_coverage(...)
+>>>   File "/home/betelgeuse/Developments/astrox-client/astrox/coverage.py", line 178, in compute_coverage
+>>>     return sess.post(endpoint="/Coverage/ComputeCoverage", data=payload)
+>>>   File "/home/betelgeuse/Developments/astrox-client/astrox/_http.py", line 284, in post
+>>>     result = _make_request(...)
+>>>   File "/home/betelgeuse/Developments/astrox-client/astrox/_http.py", line 108, in _make_request
+>>>     raise last_exception
+>>> astrox.exceptions.AstroxHTTPError: HTTP 500: Internal Server Error
+"""
