@@ -7,6 +7,11 @@ impulsive delta-V burns.
 """
 
 from astrox.astrogator import run_mcs
+from astrox._models import (
+    AgVAState,
+    IAgVAElementAgVAElementCartesian,
+    AgVAMCSSegmentAgVAMCSInitialState,
+)
 from astrox.models import (
     ApoapsisStop,
     Cartesian,
@@ -15,7 +20,6 @@ from astrox.models import (
     ImpulsiveManeuver,
     ImpulsiveManeuverSegment,
     InitialStateSegment,
-    MCSInitialState,
     PeriapsisStop,
     PropagateSegment,
 )
@@ -28,17 +32,19 @@ def main():
     print()
 
     # Initial orbit state: LEO circular orbit
-    initial_state = MCSInitialState(
+    initial_state = AgVAState(
         Epoch="1 Jan 2024 12:00:00.000",
-        CoordSystemType="Inertial",
-        CoordType="Cartesian",
-        Element=Cartesian(
-            x=6678137.0,  # Position X (m) - at equator
-            y=0.0,  # Position Y (m)
-            z=0.0,  # Position Z (m)
-            vx=0.0,  # Velocity X (m/s)
-            vy=7726.67,  # Velocity Y (m/s) - circular LEO
-            vz=0.0,  # Velocity Z (m/s)
+        CoordSystemName="Earth Inertial",
+        Element=IAgVAElementAgVAElementCartesian.model_construct(
+            **{
+                "$type": "Cartesian",
+                "X": 6678137.0,  # Position X (m) - at equator
+                "Y": 0.0,  # Position Y (m)
+                "Z": 0.0,  # Position Z (m)
+                "Vx": 0.0,  # Velocity X (m/s)
+                "Vy": 7726.67,  # Velocity Y (m/s) - circular LEO
+                "Vz": 0.0,  # Velocity Z (m/s)
+            }
         ),
     )
 
@@ -61,18 +67,27 @@ def main():
     # Define mission sequence
     sequence = [
         # Segment 1: Set initial state
-        InitialStateSegment(
-            SegmentType="InitialState",
-            InitialState=initial_state,
+        AgVAMCSSegmentAgVAMCSInitialState.model_construct(
+            **{
+                "$type": "InitialState",
+                "Name": "InitialLEOState",
+                "InitialState": initial_state.model_dump(by_alias=True),
+            }
         ),
         # Segment 2: Propagate to apoapsis
-        PropagateSegment(
-            SegmentType="Propagate",
-            StoppingConditions=[
-                ApoapsisStop(
-                    Name="FirstApoapsis",
-                )
-            ],
+        PropagateSegment.model_construct(
+            **{
+                "$type": "Propagate",
+                "Name": "PropagateToFirstApoapsis",
+                "PropagatorName": "Earth HPOP",
+                "StopConditions": [
+                    ApoapsisStop(
+                        Name="FirstApoapsis",
+                        CentralBodyName="Earth",
+                        Mu=3.986004418e14,  # Earth's gravitational parameter (m³/s²)
+                    ).model_dump(by_alias=True)
+                ],
+            }
         ),
         # Segment 3: First burn - raise periapsis
         ImpulsiveManeuverSegment(
@@ -94,6 +109,8 @@ def main():
             StoppingConditions=[
                 ApoapsisStop(
                     Name="TransferApoapsis",
+                    CentralBodyName="Earth",
+                    Mu=3.986004418e14,  # Earth's gravitational parameter (m³/s²)
                 )
             ],
         ),
@@ -117,6 +134,8 @@ def main():
             StoppingConditions=[
                 PeriapsisStop(
                     Name="VerifyOrbit",
+                    CentralBodyName="Earth",
+                    Mu=3.986004418e14,  # Earth's gravitational parameter (m³/s²)
                 )
             ],
         ),
@@ -126,6 +145,8 @@ def main():
             StoppingConditions=[
                 ApoapsisStop(
                     Name="FinalApoapsis",
+                    CentralBodyName="Earth",
+                    Mu=3.986004418e14,  # Earth's gravitational parameter (m³/s²)
                 )
             ],
         ),
@@ -235,3 +256,57 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+    # Example output:
+    # >>> ======================================================================
+    # >>> Mission Control Sequence: LEO Orbit Raising Maneuver
+    # >>> ======================================================================
+    # >>>
+    # >>> Mission Profile: LEO to Higher Orbit Transfer
+    # >>> ----------------------------------------------------------------------
+    # >>> Initial Orbit:
+    # >>>   Altitude: ~300 km
+    # >>>   Type: Circular LEO
+    # >>>   Velocity: ~7.73 km/s
+    # >>>
+    # >>> Maneuver Sequence:
+    # >>>   1. Initial State: Set spacecraft in LEO
+    # >>>   2. Propagate to apoapsis
+    # >>>   3. Burn 1: Raise periapsis (Hohmann transfer burn)
+    # >>>   4. Propagate to new apoapsis
+    # >>>   5. Burn 2: Circularize orbit
+    # >>>   6. Propagate one orbit to verify
+    # >>>
+    # >>> Traceback (most recent call last):
+    # >>>   File "/home/betelgeuse/Developments/astrox-client/examples/10_astrogator/run_mcs.py", line 254, in <module>
+    # >>>     main()
+    # >>>   File "/home/betelgeuse/Developments/astrox-client/examples/10_astrogator/run_mcs.py", line 78, in main
+    # >>>     PropagateSegment.model_construct(
+    # >>>         **{
+    # >>>             "$type": "Propagate",
+    # >>>             "Name": "PropagateToFirstApoapsis",
+    # >>>             "PropagatorName": "Earth HPOP",
+    # >>>             "StopConditions": [
+    # >>>                 ApoapsisStop(
+    # >>>                     Name="FirstApoapsis",
+    # >>>                     CentralBodyName="Earth",
+    # >>>                     Mu=3.986004418e14,  # Earth's gravitational parameter (m³/s²)
+    # >>>                 ).model_dump(by_alias=True)
+    # >>>             ],
+    # >>>         }
+    # >>>     ),
+    # >>>   File "/home/betelgeuse/Developments/astrox-client/.venv/lib/python3.13/site-packages/pydantic/main.py", line 250, in __init__
+    # >>>     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+    # >>> pydantic_core._pydantic_core.ValidationError: 4 validation errors for AgVAMCSSegmentAgVAMCSPropagate
+    # >>> $type
+    # >>>   Field required [type=missing, input_value={'SegmentType': 'Propagat... Mu=398600441800000.0)]}, input_type=dict]
+    # >>>     For further information visit https://errors.pydantic.dev/2.12/v/missing
+    # >>> PropagatorName
+    # >>>   Field required [type=missing, input_value={'SegmentType': 'Propagat... Mu=398600441800000.0)]}, input_type=dict]
+    # >>>     For further information visit https://errors.pydantic.dev/2.12/v/missing
+    # >>> StopConditions
+    # >>>   Field required [type=missing, input_value={'SegmentType': 'Propagat... Mu=398600441800000.0)]}, input_type=dict]
+    # >>>     For further information visit https://errors.pydantic.dev/2.12/v/missing
+    # >>> Name
+    # >>>   Field required [type=missing, input_value={'SegmentType': 'Propagat... Mu=398600441800000.0)]}, input_type=dict]
+    # >>>     For further information visit https://errors.pydantic.dev/2.12/v/missing

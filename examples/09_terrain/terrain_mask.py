@@ -17,12 +17,15 @@ def main():
     print()
 
     # Ground station in mountainous area: Xichang Satellite Launch Center
-    ground_station = EntityPositionSite(
-        cartographicDegrees=[
-            102.0267,  # Longitude (deg E)
-            28.2467,  # Latitude (deg N)
-            1825.0,  # Altitude (m) - elevated location
-        ]
+    ground_station = EntityPositionSite.model_construct(
+        **{
+            "$type": "SitePosition",
+            "cartographicDegrees": [
+                102.0267,  # Longitude (deg E)
+                28.2467,  # Latitude (deg N)
+                1825.0,  # Altitude (m) - elevated location
+            ]
+        }
     )
 
     print("Ground Station: Xichang Satellite Launch Center, China")
@@ -170,3 +173,46 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+    # Example output:
+    # >>> ======================================================================
+    # >>> Terrain Mask Calculation for Ground Station
+    # >>> ======================================================================
+    # >>>
+    # >>> Ground Station: Xichang Satellite Launch Center, China
+    # >>>   Longitude: 102.0267° E
+    # >>>   Latitude:  28.2467° N
+    # >>>   Altitude:  1825.0 m
+    # >>>
+    # >>> Note: Located in mountainous terrain of Sichuan Province
+    # >>>
+    # >>> Calculating terrain mask (default method)...
+    # >>> Traceback (most recent call last):
+    # >>>   File "/home/betelgeuse/Developments/astrox-client/examples/09_terrain/terrain_mask.py", line 175, in <module>
+    # >>>     main()
+    # >>>   File "/home/betelgeuse/Developments/astrox-client/examples/09_terrain/terrain_mask.py", line 41, in main
+    # >>>     result_default = get_terrain_mask(
+    # >>>         site_position=ground_station,
+    # >>>         method="default",  # High-precision terrain data
+    # >>>         text="Xichang terrain mask - default",
+    # >>>     )
+    # >>>   File "/home/betelgeuse/Developments/astrox-client/astrox/terrain.py", line 61, in get_terrain_mask
+    # >>>     return sess.post(endpoint=endpoint, data=payload)
+    # >>>   File "/home/betelgeuse/Developments/astrox-client/astrox/_http.py", line 284, in post
+    # >>>     result = _make_request(
+    # >>>         endpoint=endpoint,
+    # >>>         method="POST",
+    # >>>         json=payload,
+    # >>>     )
+    # >>>   File "/home/betelgeuse/Developments/astrox-client/astrox/_http.py", line 124, in _make_request
+    # >>>     raise exceptions.AstroxAPIError(
+    # >>>         f"API error ({response.status_code}): {message}"
+    # >>>     ) from e
+    # >>> astrox.exceptions.AstroxAPIError: Metadata could not be downloaded from the given terrain server.
+    # >>>    at ASTROX.Internal.DownloadHelper.GetStream[T](Func`2 func)
+    # >>>    at ASTROX.Internal.DownloadHelper.Get[T](Func`2 func)
+    # >>>    at ASTROX.Terrain.Internal.LayerJsonTilesetMetadata.CreateFromUri(String uri, IWebProxy proxy, Action`1 requestCallback)
+    # >>>    at AeroSpace.Terrain.StkTerrainServer2.xx2duPZpf9(String  )
+    # >>>    at AeroSpace.Terrain.StkTerrainServer2..ctor(String baseUri, Ellipsoid shape, ReferenceFrame fixedFrame, Int32 flagPole)
+    # >>>    at AeroSpace.Terrain.TerrainMaskCompute.GetAzimuthElevationMask(EntityPositionSite sitePosition, TerrainMaskConfig config)
+    # >>>    at AeroSpace.Terrain.TerrainMaskCompute.GetAzimuthElevationMask(AzimuthElevationMaskInput input)
