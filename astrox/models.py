@@ -97,23 +97,25 @@ from astrox._models import (
     # Solar Intensity
     SolarIntensityDataSolarIntensityScData,
     SolarIntensityDataSolarIntensitySiteData,
-    # Entity Positions
-    EntityPositionCentralBody,
-    EntityPositionCzml,
-    EntityPositionCzmlPositions,
-    EntityPositionJ2,
-    EntityPositionSGP4,
-    EntityPositionSite,
-    EntityPositionTwoBody,
+    # Entity Positions (with discriminators for IEntityPosition union)
+    IEntityPositionEntityPositionCentralBody,
+    IEntityPositionEntityPositionCzml,
+    IEntityPositionEntityPositionCzmlPositions,
+    IEntityPositionEntityPositionJ2,
+    IEntityPositionEntityPositionSGP4,
+    IEntityPositionEntityPositionSite,
+    IEntityPositionEntityPositionTwoBody,
     # Orientations
     OrientationLVLH,
     OrientationVNC,
     OrientationVVLH,
+    # Sensors (with discriminators for ISensor union)
+    ISensorConicSensor,
+    ISensorRectangularSensor,
     # Core domain models (already have good names)
     AccessAER,
     AccessData,
     Cartesian,
-    ConicSensor,
     EntityPath,
     Keplerian,
     KeplerElements,
@@ -243,14 +245,25 @@ SphericalElementScalar = CalcScalarCalcScalarSphericalElement
 # POSITION & ORIENTATION
 # ============================================================================
 
-# Position types
-CentralBodyPosition = EntityPositionCentralBody
-CzmlPosition = EntityPositionCzml
-CzmlPositionsData = EntityPositionCzmlPositions
-J2Position = EntityPositionJ2
-SGP4Position = EntityPositionSGP4
-SitePosition = EntityPositionSite
-TwoBodyPosition = EntityPositionTwoBody
+# Position types (using IEntityPosition discriminated union variants)
+CentralBodyPosition = IEntityPositionEntityPositionCentralBody
+CzmlPosition = IEntityPositionEntityPositionCzml
+CzmlPositionsData = IEntityPositionEntityPositionCzmlPositions
+J2Position = IEntityPositionEntityPositionJ2
+SGP4Position = IEntityPositionEntityPositionSGP4
+SitePosition = IEntityPositionEntityPositionSite
+TwoBodyPosition = IEntityPositionEntityPositionTwoBody
+EntityPositionCentralBody = IEntityPositionEntityPositionCentralBody
+EntityPositionCzml = IEntityPositionEntityPositionCzml
+EntityPositionCzmlPositions = IEntityPositionEntityPositionCzmlPositions
+EntityPositionJ2 = IEntityPositionEntityPositionJ2
+EntityPositionSGP4 = IEntityPositionEntityPositionSGP4
+EntityPositionSite = IEntityPositionEntityPositionSite
+EntityPositionTwoBody = IEntityPositionEntityPositionTwoBody
+
+# Sensor aliases for convenience
+ConicSensor = ISensorConicSensor
+RectangularSensor = ISensorRectangularSensor
 
 # ============================================================================
 # RESULTS & OUTPUTS
@@ -371,6 +384,14 @@ __all__ = [
     "SGP4Position",
     "SitePosition",
     "TwoBodyPosition",
+    # Position aliases (EntityPosition* naming)
+    "EntityPositionCentralBody",
+    "EntityPositionCzml",
+    "EntityPositionCzmlPositions",
+    "EntityPositionJ2",
+    "EntityPositionSGP4",
+    "EntityPositionSite",
+    "EntityPositionTwoBody",
     # Results
     "SegmentResultsBase",
     "FiniteManeuverResults",

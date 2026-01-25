@@ -26,7 +26,7 @@ def compute_access(
 ) -> dict:
     """Compute access between two objects.
 
-    Endpoint: POST /Access/V2
+    Endpoint: POST /access/AccessComputeV2
 
     Args:
         start: Analysis start time (UTCG) format: "yyyy-MM-ddTHH:mm:ssZ"
@@ -47,10 +47,10 @@ def compute_access(
     payload: dict = {
         "Start": start,
         "Stop": stop,
-        "FromObject": from_object.model_dump(by_alias=True, exclude_none=True)
+        "FromObjectPath": from_object.model_dump(by_alias=True, exclude_none=True)
         if isinstance(from_object, BaseModel)
         else from_object,
-        "ToObject": to_object.model_dump(by_alias=True, exclude_none=True)
+        "ToObjectPath": to_object.model_dump(by_alias=True, exclude_none=True)
         if isinstance(to_object, BaseModel)
         else to_object,
     }
@@ -64,7 +64,7 @@ def compute_access(
     if use_light_time_delay is not None:
         payload["UseLightTimeDelay"] = use_light_time_delay
 
-    return sess.post(endpoint="/Access/V2", data=payload)
+    return sess.post(endpoint="/access/AccessComputeV2", data=payload)
 
 
 def compute_chain(
@@ -81,7 +81,7 @@ def compute_chain(
 ) -> dict:
     """Compute access chain through multiple objects.
 
-    Endpoint: POST /Access/ChainCompute
+    Endpoint: POST /access/ChainCompute
 
     Args:
         start: Analysis start time (UTCG)
@@ -124,4 +124,4 @@ def compute_chain(
     if use_light_time_delay is not None:
         payload["UseLightTimeDelay"] = use_light_time_delay
 
-    return sess.post(endpoint="/Access/ChainCompute", data=payload)
+    return sess.post(endpoint="/access/ChainCompute", data=payload)

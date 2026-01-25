@@ -70,7 +70,7 @@ def rv_to_kepler(
 
     Args:
         position_velocity: Position (m) and velocity (m/s) components
-                          in Earth inertial frame
+                          in Earth inertial frame (array of 6 floats: [x, y, z, vx, vy, vz])
         session: Optional HTTP session (uses default if not provided)
 
     Returns:
@@ -78,11 +78,8 @@ def rv_to_kepler(
     """
     sess = session or get_session()
 
-    payload = {
-        "PositionVelocity": position_velocity,
-    }
-
-    return sess.post(endpoint="/OrbitConvert/RV2Kepler", data=payload)
+    # API expects raw array, not an object
+    return sess.post(endpoint="/OrbitConvert/RV2Kepler", data=position_velocity)
 
 
 def kepler_to_lla_at_ascending_node(
@@ -158,11 +155,11 @@ def geo_lambert_transfer_dv(
     sess = session or get_session()
 
     payload = {
-        "KeplerPlatform": kepler_platform.model_dump(
+        "keplerPt": kepler_platform.model_dump(
             by_alias=True, exclude_none=True
         ),
-        "KeplerTarget": kepler_target.model_dump(by_alias=True, exclude_none=True),
-        "TimeOfFlight": time_of_flight,
+        "keplerMb": kepler_target.model_dump(by_alias=True, exclude_none=True),
+        "tof": time_of_flight,
     }
 
     return sess.post(endpoint="/OrbitConvert/CalGEOYMLambertDv", data=payload)

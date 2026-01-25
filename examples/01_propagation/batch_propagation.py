@@ -133,22 +133,19 @@ def example_sgp4_batch():
 
     # Sample TLEs for different satellites
     # ISS, HST (Hubble), and two fictional satellites
+    # Note: Each satellite's two TLE lines are joined with \n into a single string
     tle_catalog = [
         # ISS
-        "1 25544U 98067A   24001.00000000  .00002182  00000-0  41420-4 0  9990",
-        "2 25544  51.6461 339.8014 0001882  64.8995 295.2305 15.48919393123456",
+        "1 25544U 98067A   24001.00000000  .00002182  00000-0  41420-4 0  9990\n2 25544  51.6461 339.8014 0001882  64.8995 295.2305 15.48919393123456",
         # Hubble Space Telescope
-        "1 20580U 90037B   24001.00000000  .00000000  00000-0  00000-0 0  9999",
-        "2 20580  28.4690 123.4560 0002800  45.6780 314.4560 15.09730000123456",
+        "1 20580U 90037B   24001.00000000  .00000000  00000-0  00000-0 0  9999\n2 20580  28.4690 123.4560 0002800  45.6780 314.4560 15.09730000123456",
         # Fictional LEO satellite 1
-        "1 99991U 23001A   24001.00000000  .00001500  00000-0  35000-4 0  9999",
-        "2 99991  98.2000  15.0000 0001000  90.0000   0.0000 14.57000000123456",
+        "1 99991U 23001A   24001.00000000  .00001500  00000-0  35000-4 0  9999\n2 99991  98.2000  15.0000 0001000  90.0000   0.0000 14.57000000123456",
         # Fictional LEO satellite 2
-        "1 99992U 23002A   24001.00000000  .00001500  00000-0  35000-4 0  9999",
-        "2 99992  98.2000 135.0000 0001000  90.0000   0.0000 14.57000000123456",
+        "1 99992U 23002A   24001.00000000  .00001500  00000-0  35000-4 0  9999\n2 99992  98.2000 135.0000 0001000  90.0000   0.0000 14.57000000123456",
     ]
 
-    print(f"\nPropagating {len(tle_catalog)//2} satellites from TLE catalog...")
+    print(f"\nPropagating {len(tle_catalog)} satellites from TLE catalog...")
     print(f"TLE epoch: 2024-01-01")
     print(f"Target epoch: 2024-01-03T00:00:00.000Z (2 days later)")
 
@@ -206,3 +203,59 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+"""
+Example output:
+>>> ======================================================================
+>>>  BATCH ORBIT PROPAGATION EXAMPLES
+>>> ======================================================================
+>>>
+>>> Batch propagation allows efficient state updates for multiple
+>>> satellites simultaneously. This is essential for:
+>>>   - Constellation management
+>>>   - Conjunction screening
+>>>   - Multi-asset mission planning
+>>>
+>>> ============================================================
+>>> Example 1: Two-Body Batch Propagation (3-satellite constellation)
+>>> ============================================================
+>>>
+>>> Propagating 3 satellites to common epoch...
+>>> Initial epoch: 2024-01-01T00:00:00.000Z
+>>> Target epoch:  2024-01-02T00:00:00.000Z (1 day later)
+>>>
+>>> Success: True
+>>>
+>>> ============================================================
+>>> Example 2: J2 Batch Propagation (5-satellite constellation)
+>>> ============================================================
+>>>
+>>> Propagating 5 satellites at different altitudes...
+>>> Altitudes: [500.0, 600.0, 700.0, 800.0, 900.0] km
+>>> Initial epoch: 2024-01-01T00:00:00.000Z
+>>> Target epoch:  2024-01-08T00:00:00.000Z (7 days later)
+>>>
+>>> Success: True
+>>>
+>>> ============================================================
+>>> Example 3: SGP4 Batch Propagation (4 satellites from TLEs)
+>>> ============================================================
+>>>
+>>> Propagating 4 satellites from TLE catalog...
+>>> TLE epoch: 2024-01-01
+>>> Target epoch: 2024-01-03T00:00:00.000Z (2 days later)
+>>>
+>>> Success: True
+>>>
+>>> ======================================================================
+>>> Batch Propagation Summary:
+>>> ----------------------------------------------------------------------
+>>> Two-Body Batch: Fastest, suitable for short durations
+>>> J2 Batch:       Accurate for most Earth satellites
+>>> SGP4 Batch:     Standard for TLE catalog processing
+>>>
+>>> All batch methods propagate to a single common epoch,
+>>> enabling direct comparison and conjunction analysis.
+>>> ======================================================================
+"""

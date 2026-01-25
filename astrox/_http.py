@@ -32,6 +32,7 @@ def _make_request(
     max_retries: int = DEFAULT_MAX_RETRIES,
     retry_delay: float = DEFAULT_RETRY_DELAY,
     session: requests.Session | None = None,
+    params: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """
     Make a POST request to the API with retry mechanism.
@@ -44,6 +45,7 @@ def _make_request(
         max_retries: Maximum number of retry attempts
         retry_delay: Initial delay between retries (exponential backoff)
         session: Optional requests.Session to use
+        params: Optional query parameters
 
     Returns:
         Parsed JSON response as dict
@@ -80,6 +82,7 @@ def _make_request(
                 json=json_data,
                 headers=headers,
                 timeout=timeout,
+                params=params,
             )
 
             # Check HTTP status
@@ -258,6 +261,7 @@ class HTTPClient:
         endpoint: str,
         data: dict[str, Any] | BaseModel,
         response_model: type[T] | None = None,
+        params: dict[str, Any] | None = None,
     ) -> T | dict[str, Any]:
         """Make POST request to API endpoint.
 
@@ -265,6 +269,7 @@ class HTTPClient:
             endpoint: API endpoint (e.g., "/api/Coverage/GetGridPoints")
             data: Request payload (dict or Pydantic model)
             response_model: Optional Pydantic model class for response validation
+            params: Optional query parameters
 
         Returns:
             Parsed response as Pydantic model if response_model provided, else dict
@@ -284,6 +289,7 @@ class HTTPClient:
             max_retries=self.max_retries,
             retry_delay=self.retry_delay,
             session=self._session,
+            params=params,
         )
 
         if response_model is None:

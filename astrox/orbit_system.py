@@ -16,7 +16,7 @@ def convert_central_body_frame(
     position: EntityPositionCzml,
     to_body: str,
     *,
-    reference_frame: Optional[str] = None,
+    reference_frame: str,
     central_body: Optional[str] = None,
     interpolation_algorithm: Optional[str] = None,
     interpolation_degree: Optional[int] = None,
@@ -28,13 +28,13 @@ def convert_central_body_frame(
 ) -> dict:
     """Convert position between central body reference frames.
 
-    Endpoint: POST /OrbitSystem/CentralBodyFrame
+    Endpoint: POST /OrbitSystem/CentralBodyFrame?toCb={to_body}&referenceFrame={reference_frame}
 
     Args:
-        position: Entity position data
-        to_body: Target central body name (e.g., "Moon", "Mars")
-        reference_frame: Reference frame type (e.g., "INERTIAL", "FIXED")
-        central_body: Source central body (default: "Earth")
+        position: Entity position data (EntityPositionCzml)
+        to_body: Target central body name (e.g., "Moon", "Mars") - query parameter
+        reference_frame: Reference frame type (e.g., "INERTIAL", "FIXED") - query parameter, required
+        central_body: Source central body (default: "Earth") - part of position data
         interpolation_algorithm: Interpolation method ("LINEAR", "LAGRANGE", "HERMITE")
         interpolation_degree: Interpolation degree
         epoch: Epoch time (UTCG)
@@ -48,31 +48,32 @@ def convert_central_body_frame(
     """
     sess = session or get_session()
 
-    payload: dict = {
-        "Position": position.model_dump(by_alias=True, exclude_none=True)
-        if isinstance(position, BaseModel)
-        else position,
-        "ToBody": to_body,
+    # Build query parameters
+    params = {
+        "toCb": to_body,
+        "referenceFrame": reference_frame,
     }
 
-    if reference_frame is not None:
-        payload["ReferenceFrame"] = reference_frame
+    # Build request body (EntityPositionCzml with optional overrides)
+    payload = position.model_dump(by_alias=True, exclude_none=True) if isinstance(position, BaseModel) else position
+
+    # Apply optional overrides to payload
     if central_body is not None:
         payload["CentralBody"] = central_body
     if interpolation_algorithm is not None:
-        payload["InterpolationAlgorithm"] = interpolation_algorithm
+        payload["interpolationAlgorithm"] = interpolation_algorithm
     if interpolation_degree is not None:
-        payload["InterpolationDegree"] = interpolation_degree
+        payload["interpolationDegree"] = interpolation_degree
     if epoch is not None:
-        payload["Epoch"] = epoch
+        payload["epoch"] = epoch
     if interval is not None:
-        payload["Interval"] = interval
+        payload["interval"] = interval
     if cartesian is not None:
-        payload["Cartesian"] = cartesian
+        payload["cartesian"] = cartesian
     if cartesian_velocity is not None:
-        payload["CartesianVelocity"] = cartesian_velocity
+        payload["cartesianVelocity"] = cartesian_velocity
 
-    return sess.post(endpoint="/OrbitSystem/CentralBodyFrame", data=payload)
+    return sess.post(endpoint="/OrbitSystem/CentralBodyFrame", data=payload, params=params)
 
 
 def compute_earth_moon_libration(

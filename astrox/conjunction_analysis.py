@@ -33,8 +33,8 @@ def compute_close_approach(
     """Compute space debris close approach / collision analysis.
 
     Endpoints (merged):
-    - POST /CAT2/CA_ComputeV3 (version="v3", sat1 is TleInfo)
-    - POST /CAT2/CA_ComputeV4 (version="v4", sat1 is EntityPositionCzml for rockets)
+    - POST /CAT/CA_ComputeV3 (version="v3", sat1 is TleInfo)
+    - POST /CAT/CA_ComputeV4 (version="v4", sat1 is EntityPositionCzml for rockets)
 
     Args:
         start_utcg: Analysis start time (UTC) format: "yyyy-MM-ddTHH:mm:ss.fffZ"
@@ -55,10 +55,10 @@ def compute_close_approach(
 
     # Map version to endpoint
     endpoints = {
-        "v3": "/CAT2/CA_ComputeV3",
-        "v4": "/CAT2/CA_ComputeV4",
+        "v3": "/CAT/CA_ComputeV3",
+        "v4": "/CAT/CA_ComputeV4",
     }
-    endpoint = endpoints.get(version, "/CAT2/CA_ComputeV4")
+    endpoint = endpoints.get(version, "/CAT/CA_ComputeV4")
 
     payload: dict = {
         "Start_UTCG": start_utcg,
@@ -109,9 +109,9 @@ def debris_breakup(
     """Generate space debris from satellite breakup.
 
     Endpoints (merged):
-    - POST /CAT2/DebrisBreakupSimple (method="simple")
-    - POST /CAT2/DebrisBreakup (method="default")
-    - POST /CAT2/DebrisBreakupNASA (method="nasa")
+    - POST /CAT/DebrisBreakupSimple (method="simple")
+    - POST /CAT/DebrisBreakup (method="default")
+    - POST /CAT/DebrisBreakupNASA (method="nasa")
 
     Args:
         mother_satellite: Parent satellite TLE
@@ -138,14 +138,14 @@ def debris_breakup(
 
     # Map method to endpoint
     endpoints = {
-        "simple": "/CAT2/DebrisBreakupSimple",
-        "default": "/CAT2/DebrisBreakup",
-        "nasa": "/CAT2/DebrisBreakupNASA",
+        "simple": "/CAT/DebrisBreakupSimple",
+        "default": "/CAT/DebrisBreakup",
+        "nasa": "/CAT/DebrisBreakupNASA",
     }
-    endpoint = endpoints.get(method, "/CAT2/DebrisBreakupSimple")
+    endpoint = endpoints.get(method, "/CAT/DebrisBreakupSimple")
 
     payload: dict = {
-        "MotherSatellite": mother_satellite.model_dump(
+        "MotherSate": mother_satellite.model_dump(
             by_alias=True, exclude_none=True
         )
         if isinstance(mother_satellite, BaseModel)
@@ -198,7 +198,7 @@ def get_tle(
 ) -> dict:
     """Generate two-line element set from orbital elements.
 
-    Endpoint: POST /CAT2/GetTLE
+    Endpoint: POST /CAT/GetTLE
 
     Args:
         name: Space target name
@@ -235,7 +235,7 @@ def get_tle(
     if is_mean_elements is not None:
         payload["IsMeanElements"] = is_mean_elements
 
-    return sess.post(endpoint="/CAT2/GetTLE", data=payload)
+    return sess.post(endpoint="/CAT/GetTLE", data=payload)
 
 
 def compute_lifetime(
@@ -248,7 +248,7 @@ def compute_lifetime(
 ) -> dict:
     """Calculate orbital lifetime from TLE.
 
-    Endpoint: POST /CAT2/GetLifetime
+    Endpoint: POST /CAT/LifeTimeTLE
 
     Args:
         epoch: Analysis epoch (UTCG)
@@ -271,4 +271,4 @@ def compute_lifetime(
         "Mass": mass,
     }
 
-    return sess.post(endpoint="/CAT2/GetLifetime", data=payload)
+    return sess.post(endpoint="/CAT/LifeTimeTLE", data=payload)

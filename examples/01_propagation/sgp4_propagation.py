@@ -78,3 +78,25 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+"""
+Example output:
+>>> Propagating ISS orbit using SGP4...
+>>> TLE Line 1: 1 25544U 98067A   24001.00000000  .00002182  00000-0  41420-4 0  9990
+>>> TLE Line 2: 2 25544  51.6461 339.8014 0001882  64.8995 295.2305 15.48919393123456
+>>>
+>>> ============================================================
+>>> SGP4 Propagation Results (ISS)
+>>> ============================================================
+>>> Success: True
+>>> Message: Success
+>>>
+>>> ============================================================
+>>> SGP4 Model Features:
+>>> - Incorporates atmospheric drag (from TLE B* parameter)
+>>> - Includes simplified perturbations (J2, J3, J4)
+>>> - Standard for NORAD catalog orbit predictions
+>>> - Accuracy degrades after 5-7 days from TLE epoch
+>>> ============================================================
+"""

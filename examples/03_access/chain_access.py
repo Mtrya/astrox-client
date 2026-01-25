@@ -29,12 +29,14 @@ def main():
     transmitter = EntityPath(
         Name="Transmitter",
         Position=EntityPositionSite(
+            **{'$type': 'SitePosition'},
             cartographicDegrees=[-75.5966, 30.0386, 0.0]  # lon, lat, alt
         ),
         Sensors=[
             ConicSensor(
-                Name="TX_Antenna",
-                HalfAngle=60.0,  # Wide beam antenna
+                **{'$type': 'Conic'},
+                Text="TX_Antenna",
+                outerHalfAngle=60.0,  # Wide beam antenna
             )
         ],
     )
@@ -43,6 +45,9 @@ def main():
     relay1 = EntityPath(
         Name="Relay_1",
         Position=EntityPositionJ2(
+            **{'$type': 'J2'},
+            J2NormalizedValue=0.000484165143790815,
+            RefDistance=6378136.3,
             OrbitEpoch="25 Apr 2022 00:00:00.000000",
             CoordSystem="Inertial",
             CoordType="Classical",
@@ -57,8 +62,9 @@ def main():
         ),
         Sensors=[
             ConicSensor(
-                Name="Downlink",
-                HalfAngle=45.0,
+                **{'$type': 'Conic'},
+                Text="Downlink",
+                outerHalfAngle=45.0,
             )
         ],
     )
@@ -67,6 +73,9 @@ def main():
     relay2 = EntityPath(
         Name="Relay_2",
         Position=EntityPositionJ2(
+            **{'$type': 'J2'},
+            J2NormalizedValue=0.000484165143790815,
+            RefDistance=6378136.3,
             OrbitEpoch="25 Apr 2022 00:00:00.000000",
             CoordSystem="Inertial",
             CoordType="Classical",
@@ -81,8 +90,9 @@ def main():
         ),
         Sensors=[
             ConicSensor(
-                Name="Downlink",
-                HalfAngle=45.0,
+                **{'$type': 'Conic'},
+                Text="Downlink",
+                outerHalfAngle=45.0,
             )
         ],
     )
@@ -91,12 +101,14 @@ def main():
     receiver = EntityPath(
         Name="Receiver",
         Position=EntityPositionSite(
+            **{'$type': 'SitePosition'},
             cartographicDegrees=[10.0, 48.0, 0.0]  # Munich area
         ),
         Sensors=[
             ConicSensor(
-                Name="RX_Antenna",
-                HalfAngle=60.0,
+                **{'$type': 'Conic'},
+                Text="RX_Antenna",
+                outerHalfAngle=60.0,
             )
         ],
     )

@@ -12,6 +12,7 @@ like collision avoidance and long-term orbit predictions.
 """
 
 from astrox.propagator import propagate_hpop
+from astrox._models import Propagator
 
 
 def main():
@@ -39,6 +40,14 @@ def main():
     print("Including: gravity harmonics, drag, SRP, third-body effects")
     print("This may take longer due to the complexity of the model...\n")
 
+    # Create HPOP propagator configuration
+    # The propagator requires at least a name
+    hpop_config = Propagator(
+        Name="Earth_HPOP",
+        Description="High-precision orbit propagator",
+        CentralBodyName="Earth"
+    )
+
     # Propagate for 30 days
     result = propagate_hpop(
         start="2024-01-01T00:00:00.000Z",
@@ -54,7 +63,8 @@ def main():
         # Solar radiation pressure parameters
         coefficient_of_srp=1.3,  # Accounting for reflectivity
         area_mass_ratio_srp=cross_sectional_area / mass,  # 0.01 m²/kg
-        step=3600.0,  # 1-hour steps for monthly propagation
+        # HPOP propagator configuration
+        hpop_propagator=hpop_config,
     )
 
     # Print results
@@ -68,7 +78,6 @@ def main():
         positions = result['CzmlPositions']
         num_points = len(positions) // 3
         print(f"\nGenerated {num_points} position points")
-        print(f"Step size: 3600 seconds (1 hour)")
         print(f"Duration: 30 days")
 
         # GEO orbital period should be very close to sidereal day

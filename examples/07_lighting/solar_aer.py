@@ -20,12 +20,15 @@ def main():
     stop = "2024-06-21T20:00:00Z"
 
     # Ground station: Beijing, China
-    ground_station = EntityPositionSite(
-        cartographicDegrees=[
-            116.3974,  # Longitude (deg E)
-            39.9087,  # Latitude (deg N)
-            50.0,  # Altitude (m)
-        ]
+    ground_station = EntityPositionSite.model_construct(
+        **{
+            "$type": "SitePosition",
+            "cartographicDegrees": [
+                116.3974,  # Longitude (deg E)
+                39.9087,  # Latitude (deg N)
+                50.0,  # Altitude (m)
+            ]
+        }
     )
 
     print(f"Analysis Date: June 21, 2024 (Summer Solstice)")
@@ -140,3 +143,26 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+"""
+>>> ======================================================================
+>>> Solar AER (Azimuth-Elevation-Range) from Ground Station
+>>> ======================================================================
+>>>
+>>> Analysis Date: June 21, 2024 (Summer Solstice)
+>>> Ground Station: Beijing, China
+>>>   Longitude: 116.3974° E
+>>>   Latitude:  39.9087° N
+>>>   Altitude:  50.0 m
+>>>
+>>> Analysis Period: 2024-06-21T04:00:00Z to 2024-06-21T20:00:00Z
+>>>
+>>> Calculating solar position (AER) throughout the day...
+>>>
+>>> Solar Position Results:
+>>> ----------------------------------------------------------------------
+>>> No solar AER data returned.
+>>>
+>>> Solar AER calculation completed successfully!
+>>> ======================================================================
+"""

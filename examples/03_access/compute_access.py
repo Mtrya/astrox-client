@@ -28,6 +28,7 @@ def main():
     ground_station = EntityPath(
         Name="Cape_Canaveral",
         Position=EntityPositionSite(
+            **{'$type': 'SitePosition'},
             cartographicDegrees=[-80.6039, 28.5729, 10.0]  # lon, lat, alt (m)
         ),
     )
@@ -36,6 +37,9 @@ def main():
     satellite = EntityPath(
         Name="LEO_Satellite",
         Position=EntityPositionJ2(
+            **{'$type': 'J2'},
+            J2NormalizedValue=0.000484165143790815,  # Earth EGM2008
+            RefDistance=6378136.3,  # Earth EGM2008 reference radius (m)
             OrbitEpoch="25 Apr 2022 04:00:00.000000",
             CoordSystem="Inertial",
             CoordType="Classical",
@@ -48,20 +52,20 @@ def main():
                 0.0,  # True anomaly (deg)
             ],
         ),
-        Sensors=[
-            ConicSensor(
-                Name="Camera",
-                HalfAngle=30.0,  # 30-degree cone angle
-            )
-        ],
+        Sensor=ConicSensor(
+            **{'$type': 'Conic'},
+            Text="Camera",
+            outerHalfAngle=30.0,  # 30-degree cone angle
+        ),
     )
 
     print(f"Analysis Period: {start} to {stop}")
     print(f"Ground Station: {ground_station.Name}")
-    print(f"  Location: {ground_station.Position.cartographicDegrees}")
+    print(f"  Location: {ground_station.Position.root.cartographicDegrees}")
     print(f"Satellite: {satellite.Name}")
     print(f"  Orbit: LEO (300km altitude, 28.5° inclination)")
-    print(f"  Sensor: {satellite.Sensors[0].Name} ({satellite.Sensors[0].HalfAngle}° cone)")
+    if satellite.Sensor:
+        print(f"  Sensor: {satellite.Sensor.root.Text} ({satellite.Sensor.root.outerHalfAngle}° cone)")
     print()
 
     # Compute access with AER parameters
@@ -117,3 +121,25 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+"""
+>>> ======================================================================
+>>> Access Computation: Satellite to Ground Station
+>>> ======================================================================
+>>>
+>>> Analysis Period: 2022-04-25T04:00:00Z to 2022-04-26T04:00:00Z
+>>> Ground Station: Cape_Canaveral
+>>>   Location: [-80.6039, 28.5729, 10.0]
+>>> Satellite: LEO_Satellite
+>>>   Orbit: LEO (300km altitude, 28.5° inclination)
+>>>   Sensor: Camera (30.0° cone)
+>>>
+>>> Computing access windows...
+>>>
+>>> Access Results:
+>>> ----------------------------------------------------------------------
+>>> No access windows found during the analysis period.
+>>>
+>>> Access computation completed successfully!
+>>> ======================================================================
+"""

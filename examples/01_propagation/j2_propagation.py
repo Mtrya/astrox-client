@@ -79,3 +79,23 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+"""
+Example output:
+>>> Propagating sun-synchronous orbit with J2 perturbations...
+>>> This will take a moment as we're computing 7 days...
+>>>
+>>> ============================================================
+>>> J2 Propagation Results (Sun-Synchronous Orbit)
+>>> ============================================================
+>>> Success: True
+>>> Message: Success
+>>>
+>>> ============================================================
+>>> J2 Effects on SSO:
+>>> - The orbit plane precesses at ~0.986°/day
+>>> - This keeps the satellite in sync with the sun
+>>> - Essential for consistent lighting in imaging missions
+>>> ============================================================
+"""

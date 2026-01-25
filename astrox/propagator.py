@@ -410,7 +410,7 @@ def propagate_j2_batch(
 
     payload = {
         "Epoch": epoch,
-        "AllSatelliteElements": [
+        "AllSateElements": [  # Note: API has typo - "Sate" not "Satellite"
             elem.model_dump(by_alias=True, exclude_none=True)
             if isinstance(elem, BaseModel)
             else elem
@@ -471,7 +471,7 @@ def propagate_two_body_batch(
 
     payload = {
         "Epoch": epoch,
-        "AllSatelliteElements": [
+        "AllSateElements": [  # Note: API has typo - "Sate" not "Satellite"
             elem.model_dump(by_alias=True, exclude_none=True)
             if isinstance(elem, BaseModel)
             else elem

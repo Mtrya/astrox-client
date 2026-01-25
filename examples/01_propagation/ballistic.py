@@ -114,3 +114,31 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+"""
+Example output:
+>>> Computing ballistic trajectory...
+>>> Launch: (28.5721°, -80.6480°) at 10.0 m
+>>> Impact: (30.0000°, -70.0000°) at 0.0 m
+>>>
+>>> ============================================================
+>>> Ballistic Trajectory Results
+>>> ============================================================
+>>> Success: True
+>>> Message: Success
+>>>
+>>> ============================================================
+>>> Ballistic Trajectory Types:
+>>>   - DeltaV: Specify initial velocity magnitude
+>>>   - DeltaV_MinEcc: Minimum eccentricity trajectory
+>>>   - ApogeeAlt: Specify maximum altitude (used here)
+>>>   - TimeOfFlight: Specify flight duration
+>>>
+>>> Applications:
+>>>   - Suborbital space tourism (Blue Origin, Virgin Galactic)
+>>>   - Sounding rockets for atmospheric research
+>>>   - First stage recovery impact prediction
+>>>   - Military trajectory analysis
+>>> ============================================================
+"""

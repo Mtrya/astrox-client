@@ -468,7 +468,8 @@ def generate_models(spec: dict[str, Any], output_path: Path) -> bool:
             '--output', str(output_path),
             '--input-file-type', 'openapi',
             '--output-model-type', 'pydantic_v2.BaseModel',
-            '--enum-field-as-literal', 'one'
+            '--enum-field-as-literal', 'one',
+            '--allow-population-by-field-name',  # Allow using both field name and alias
         ]
 
         result = subprocess.run(

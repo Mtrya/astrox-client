@@ -74,3 +74,19 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+"""
+Example output:
+>>> ============================================================
+>>> Two-Body Propagation Results (ISS Orbit)
+>>> ============================================================
+>>> Success: True
+>>> Message: Success
+>>>
+>>> ============================================================
+>>> Note: Two-body propagation ignores perturbations like J2,
+>>> atmospheric drag, and solar radiation pressure. For more
+>>> accurate results, use J2 or HPOP propagation.
+>>> ============================================================
+"""

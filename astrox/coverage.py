@@ -30,6 +30,29 @@ __all__ = [
 ]
 
 
+def _add_grid_discriminator(grid: BaseModel) -> dict:
+    """Add $type discriminator to grid payload for API compatibility.
+
+    The ASTROX API requires a $type field to distinguish between different
+    grid types (Global, LatitudeBounds, LatLonBounds, CbLatLonBounds).
+    """
+    grid_dict = grid.model_dump(by_alias=True, exclude_none=True)
+
+    # Map Python class names to API discriminator values
+    grid_type_map = {
+        "CoverageGridGlobal": "Global",
+        "CoverageGridLatitudeBounds": "LatitudeBounds",
+        "CoverageGridLatLonBounds": "LatLonBounds",
+        "CovGridLatLonBounds": "CbLatLonBounds",
+    }
+
+    class_name = grid.__class__.__name__
+    if class_name in grid_type_map:
+        grid_dict["$type"] = grid_type_map[class_name]
+
+    return grid_dict
+
+
 def get_grid_points(
     grid: Union[
         CoverageGridGlobal,
@@ -56,7 +79,7 @@ def get_grid_points(
     sess = session or get_session()
 
     payload: dict = {
-        "Grid": grid.model_dump(by_alias=True, exclude_none=True)
+        "Grid": _add_grid_discriminator(grid)
         if isinstance(grid, BaseModel)
         else grid,
     }
@@ -117,7 +140,7 @@ def compute_coverage(
     payload: dict = {
         "Start": start,
         "Stop": stop,
-        "Grid": grid.model_dump(by_alias=True, exclude_none=True)
+        "Grid": _add_grid_discriminator(grid)
         if isinstance(grid, BaseModel)
         else grid,
         "Assets": [
@@ -220,7 +243,7 @@ def fom_simple_coverage(
     payload: dict = {
         "Start": start,
         "Stop": stop,
-        "Grid": grid.model_dump(by_alias=True, exclude_none=True)
+        "Grid": _add_grid_discriminator(grid)
         if isinstance(grid, BaseModel)
         else grid,
         "Assets": [
@@ -321,7 +344,7 @@ def fom_coverage_time(
     payload: dict = {
         "Start": start,
         "Stop": stop,
-        "Grid": grid.model_dump(by_alias=True, exclude_none=True)
+        "Grid": _add_grid_discriminator(grid)
         if isinstance(grid, BaseModel)
         else grid,
         "Assets": [
@@ -424,7 +447,7 @@ def fom_number_of_assets(
     payload: dict = {
         "Start": start,
         "Stop": stop,
-        "Grid": grid.model_dump(by_alias=True, exclude_none=True)
+        "Grid": _add_grid_discriminator(grid)
         if isinstance(grid, BaseModel)
         else grid,
         "Assets": [
@@ -529,7 +552,7 @@ def fom_response_time(
     payload: dict = {
         "Start": start,
         "Stop": stop,
-        "Grid": grid.model_dump(by_alias=True, exclude_none=True)
+        "Grid": _add_grid_discriminator(grid)
         if isinstance(grid, BaseModel)
         else grid,
         "Assets": [
@@ -634,7 +657,7 @@ def fom_revisit_time(
     payload: dict = {
         "Start": start,
         "Stop": stop,
-        "Grid": grid.model_dump(by_alias=True, exclude_none=True)
+        "Grid": _add_grid_discriminator(grid)
         if isinstance(grid, BaseModel)
         else grid,
         "Assets": [
@@ -724,7 +747,7 @@ def report_coverage_by_asset(
     payload: dict = {
         "Start": start,
         "Stop": stop,
-        "Grid": grid.model_dump(by_alias=True, exclude_none=True)
+        "Grid": _add_grid_discriminator(grid)
         if isinstance(grid, BaseModel)
         else grid,
         "Assets": [
@@ -810,7 +833,7 @@ def report_percent_coverage(
     payload: dict = {
         "Start": start,
         "Stop": stop,
-        "Grid": grid.model_dump(by_alias=True, exclude_none=True)
+        "Grid": _add_grid_discriminator(grid)
         if isinstance(grid, BaseModel)
         else grid,
         "Assets": [
