@@ -193,6 +193,6 @@ To add new examples:
 ## Resources
 
 - **API Server**: http://astrox.cn:8765/
-- **OpenAPI Spec (local file)**: `docs/internal/astrox-web-api-250929.yaml`
-- **Project Repository**: (see main project README for the canonical URL)
-- **PyPI Package**: (see main project README for the canonical package name)
+- **OpenAPI Spec**: http://astrox.cn:8765/openapi/v1.json
+- **Project Repository**: https://github.com/your-org/astrox-client
+- **PyPI Package**: https://pypi.org/project/astrox-client/
