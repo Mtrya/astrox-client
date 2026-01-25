@@ -278,6 +278,88 @@ def rename_numbered_schemas(spec: dict[str, Any]) -> tuple[dict[str, Any], dict[
     return spec, renames
 
 
+def remove_discriminator_from_any(spec: dict[str, Any]) -> dict[str, Any]:
+    """
+    Remove discriminator from fields that are typed as 'Any' (no schema ref).
+    Pydantic V2 forbids discriminator on 'Any' fields.
+    """
+    print("\nScanning for 'Any' fields with discriminators...")
+
+    schemas = spec.get('components', {}).get('schemas', {})
+    count = 0
+
+    for name, schema in schemas.items():
+        if 'properties' not in schema:
+            continue
+
+        for prop_name, prop in schema['properties'].items():
+            # Check if it has a discriminator but no $ref or exact type that supports it
+            if 'discriminator' in prop:
+                # If it doesn't have a $ref, acts like Any/Object
+                if '$ref' not in prop and 'oneOf' not in prop:
+                    # Remove discriminator
+                    del prop['discriminator']
+                    count += 1
+                    print(f"  ✓ Removed discriminator from {name}.{prop_name} (typed as Any)")
+
+    print(f"Removed discriminators from {count} fields.")
+    return spec
+
+
+def make_discriminator_fields_required(spec: dict[str, Any]) -> dict[str, Any]:
+    """
+    Make all discriminator fields required (non-nullable) in union member schemas.
+    Pydantic V2 requires discriminator fields to be Literal types, not Literal | None.
+
+    This searches for schemas that have properties with 'enum' of length 1
+    (which become Literal fields) and makes them required if they're referenced
+    in discriminated unions.
+    """
+    print("\nMaking discriminator fields non-nullable and required...")
+
+    schemas = spec.get('components', {}).get('schemas', {})
+    count = 0
+
+    # Strategy: Find all schemas with single-value enum properties (these become Literal fields)
+    # and make them required + non-nullable
+    for schema_name, schema in schemas.items():
+        if 'properties' not in schema:
+            continue
+
+        for prop_name, prop in schema['properties'].items():
+            # Look for properties that have a single-value enum (becomes Literal)
+            # These are likely discriminator fields
+            if 'enum' in prop and len(prop['enum']) == 1:
+                # Make it required
+                if 'required' not in schema:
+                    schema['required'] = []
+                if prop_name not in schema['required']:
+                    schema['required'].append(prop_name)
+                    count += 1
+                    print(f"  ✓ Made '{prop_name}' required in {schema_name}")
+
+                # Remove nullable/None from type if present
+                if 'type' in prop:
+                    if isinstance(prop['type'], list) and 'null' in prop['type']:
+                        prop['type'] = [t for t in prop['type'] if t != 'null']
+                        if len(prop['type']) == 1:
+                            prop['type'] = prop['type'][0]
+                    # Also check for ['string', 'null'] pattern
+                    if isinstance(prop['type'], list) and 'null' in prop['type']:
+                        prop['type'] = [t for t in prop['type'] if t != 'null']
+
+                # Remove nullable flag completely
+                if 'nullable' in prop:
+                    del prop['nullable']
+
+                # Remove default None if present
+                if 'default' in prop and prop['default'] is None:
+                    del prop['default']
+
+    print(f"Made {count} discriminator field(s) required and non-nullable.")
+    return spec
+
+
 def remove_duplicate_schemas(
     spec: dict[str, Any],
     duplicates: dict[str, list[str]]
@@ -384,7 +466,9 @@ def generate_models(spec: dict[str, Any], output_path: Path) -> bool:
             'datamodel-codegen',
             '--input', tmp_path,
             '--output', str(output_path),
-            '--input-file-type', 'openapi'
+            '--input-file-type', 'openapi',
+            '--output-model-type', 'pydantic_v2.BaseModel',
+            '--enum-field-as-literal', 'one'
         ]
 
         result = subprocess.run(
@@ -527,6 +611,12 @@ def main() -> None:
     # Step 5: Fix broken discriminators
     if broken:
         spec = fix_discriminators(spec, broken)
+
+    # Step 5b: Fix Any with discriminator
+    spec = remove_discriminator_from_any(spec)
+
+    # Step 5c: Make discriminator fields required
+    spec = make_discriminator_fields_required(spec)
 
     # Summary
     final_schema_count = len(spec.get('components', {}).get('schemas', {}))
