@@ -15,13 +15,13 @@ from astrox._models import (
 )
 
 __all__ = [
-    "optimize_ascent_trajectory",
-    "optimize_descent_trajectory",
-    "calculate_guidance_trajectory",
+    "optimize_trajectory",
+    "optimize_landing",
+    "compute_guided_trajectory",
 ]
 
 
-def optimize_ascent_trajectory(
+def optimize_trajectory(
     gw: float,
     t1: float,
     alpham: float,
@@ -46,7 +46,7 @@ def optimize_ascent_trajectory(
 ) -> dict:
     """Optimize rocket ascent trajectory using flight segment model.
 
-    Endpoint: POST /Rocket/RocketVAMCSOptim/Ascent
+    Endpoint: POST /Rocket/RocketSegmentFA
 
     Args:
         gw: Payload mass (kg)
@@ -120,10 +120,10 @@ def optimize_ascent_trajectory(
             for prof in mcs_profiles
         ]
 
-    return sess.post(endpoint="/Rocket/RocketVAMCSOptim/Ascent", data=payload)
+    return sess.post(endpoint="/Rocket/RocketSegmentFA", data=payload)
 
 
-def optimize_descent_trajectory(
+def optimize_landing(
     *,
     name: Optional[str] = None,
     text: Optional[str] = None,
@@ -150,7 +150,7 @@ def optimize_descent_trajectory(
 ) -> dict:
     """Optimize rocket vertical landing trajectory.
 
-    Endpoint: POST /Rocket/RocketVAMCSOptim/Descent
+    Endpoint: POST /Rocket/RocketLanding
 
     Uses 4-segment model with aerodynamics for powered descent landing.
 
@@ -228,10 +228,10 @@ def optimize_descent_trajectory(
     if cons_h is not None:
         payload["ConsH"] = cons_h
 
-    return sess.post(endpoint="/Rocket/RocketVAMCSOptim/Descent", data=payload)
+    return sess.post(endpoint="/Rocket/RocketLanding", data=payload)
 
 
-def calculate_guidance_trajectory(
+def compute_guided_trajectory(
     guidance_config: RocketGuid,
     *,
     session: Optional[HTTPClient] = None,

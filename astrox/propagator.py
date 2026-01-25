@@ -77,7 +77,7 @@ def propagate_two_body(
     if coord_type is not None:
         payload["CoordType"] = coord_type
 
-    return sess.post(endpoint="/Propagator/Propagate/TwoBody", data=payload)
+    return sess.post(endpoint="/Propagator/TwoBody", data=payload)
 
 
 def propagate_ballistic(
@@ -149,7 +149,7 @@ def propagate_ballistic(
     if stop is not None:
         payload["Stop"] = stop
 
-    return sess.post(endpoint="/Propagator/Propagate/Ballistic", data=payload)
+    return sess.post(endpoint="/Propagator/Ballistic", data=payload)
 
 
 def propagate_j2(
@@ -210,7 +210,7 @@ def propagate_j2(
     if coord_type is not None:
         payload["CoordType"] = coord_type
 
-    return sess.post(endpoint="/Propagator/Propagate/J2", data=payload)
+    return sess.post(endpoint="/Propagator/J2", data=payload)
 
 
 def propagate_sgp4(
@@ -250,7 +250,7 @@ def propagate_sgp4(
     if satellite_number is not None:
         payload["SatelliteNumber"] = satellite_number
 
-    return sess.post(endpoint="/Propagator/Propagate/SGP4", data=payload)
+    return sess.post(endpoint="/Propagator/sgp4", data=payload)
 
 
 def propagate_simple_ascent(
@@ -308,7 +308,7 @@ def propagate_simple_ascent(
     if step is not None:
         payload["Step"] = step
 
-    return sess.post(endpoint="/Propagator/Propagate/SimpleAscent", data=payload)
+    return sess.post(endpoint="/Propagator/SimpleAscent", data=payload)
 
 
 def propagate_hpop(
@@ -385,7 +385,7 @@ def propagate_hpop(
             by_alias=True, exclude_none=True
         )
 
-    return sess.post(endpoint="/Propagator/Propagate/HPOP", data=payload)
+    return sess.post(endpoint="/Propagator/HPOP", data=payload)
 
 
 def propagate_j2_batch(
@@ -418,7 +418,7 @@ def propagate_j2_batch(
         ],
     }
 
-    return sess.post(endpoint="/Propagator/Propagate/J2Batch", data=payload)
+    return sess.post(endpoint="/Propagator/MultiJ2", data=payload)
 
 
 def propagate_sgp4_batch(
@@ -446,7 +446,7 @@ def propagate_sgp4_batch(
         "TLEs": tles,
     }
 
-    return sess.post(endpoint="/Propagator/Propagate/SGP4Batch", data=payload)
+    return sess.post(endpoint="/Propagator/MultiSgp4", data=payload)
 
 
 def propagate_two_body_batch(
@@ -479,4 +479,4 @@ def propagate_two_body_batch(
         ],
     }
 
-    return sess.post(endpoint="/Propagator/Propagate/TwoBodyBatch", data=payload)
+    return sess.post(endpoint="/Propagator/MultiTwoBody", data=payload)
