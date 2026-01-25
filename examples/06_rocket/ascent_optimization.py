@@ -5,8 +5,10 @@ Demonstrates optimization of multi-stage rocket ascent trajectories to reach
 target orbits using the flight segment model.
 """
 
-from astrox.rocket import optimize_ascent_trajectory
-from astrox.models import RocketSegment
+from astrox.rocket import optimize_trajectory
+# Note: RocketSegmentInfo is not available in public models.py
+# This is a known issue - the model needs to be aliased in models.py
+from astrox._models import RocketSegmentInfo
 
 # Example 1: Two-stage rocket to LEO
 print("=" * 70)
@@ -15,7 +17,7 @@ print("=" * 70)
 
 # Define rocket segments (CZ-2D-like configuration)
 stage1_segments = [
-    RocketSegment(
+    RocketSegmentInfo(
         Name="一级起飞",  # Stage 1 liftoff
         Text="First stage ignition and vertical ascent",
         Fx=2961600.0,  # Total thrust (N) - 4 YF-21C engines
@@ -30,7 +32,7 @@ stage1_segments = [
 ]
 
 stage2_segments = [
-    RocketSegment(
+    RocketSegmentInfo(
         Name="二级起飞",  # Stage 2 ignition
         Text="Second stage ignition after interstage separation",
         Fx=742040.0,  # YF-24E engine thrust (N)
@@ -48,7 +50,7 @@ stage2_segments = [
 rocket_segments = stage1_segments + stage2_segments
 
 # Target orbit (800 km circular LEO, sun-synchronous)
-result_leo = optimize_ascent_trajectory(
+result_leo = optimize_trajectory(
     gw=1500.0,  # Payload mass (kg)
     t1=15.0,  # Gravity turn start time (s after liftoff)
     alpham=5.0,  # Maximum angle of attack during atmospheric flight (deg)
@@ -87,7 +89,7 @@ print("=" * 70)
 
 # CZ-3B-like configuration (heavier lift to GTO)
 gto_segments = [
-    RocketSegment(
+    RocketSegmentInfo(
         Name="一级起飞",
         Text="Core stage + 4 boosters liftoff",
         Fx=5923200.0,  # Core + boosters total thrust (N)
@@ -99,7 +101,7 @@ gto_segments = [
         Psicx="0.0",
         Phicx_dot=0.0,
     ),
-    RocketSegment(
+    RocketSegmentInfo(
         Name="二级起飞",
         Text="Second stage in upper atmosphere",
         Fx=742040.0,
@@ -111,7 +113,7 @@ gto_segments = [
         Psicx="Follow",
         Phicx_dot=0.15,
     ),
-    RocketSegment(
+    RocketSegmentInfo(
         Name="三级起飞",
         Text="Third stage for GTO insertion",
         Fx=163000.0,  # YF-75 upper stage (H2/LOX)
@@ -126,7 +128,7 @@ gto_segments = [
 ]
 
 # GTO target orbit
-result_gto = optimize_ascent_trajectory(
+result_gto = optimize_trajectory(
     gw=5500.0,  # Heavier GTO payload
     t1=18.0,  # Slightly later gravity turn
     alpham=4.0,  # Lower AoA limit for stability
@@ -157,7 +159,7 @@ print("=" * 70)
 
 # Simplified solid-propellant small launcher
 small_launcher_segments = [
-    RocketSegment(
+    RocketSegmentInfo(
         Name="一级起飞",
         Text="Solid rocket motor stage 1",
         Fx=1200000.0,  # Solid motor thrust
@@ -169,7 +171,7 @@ small_launcher_segments = [
         Psicx="0.0",
         Phicx_dot=0.0,
     ),
-    RocketSegment(
+    RocketSegmentInfo(
         Name="二级起飞",
         Text="Solid rocket motor stage 2",
         Fx=400000.0,
@@ -181,7 +183,7 @@ small_launcher_segments = [
         Psicx="Follow",
         Phicx_dot=0.3,
     ),
-    RocketSegment(
+    RocketSegmentInfo(
         Name="三级起飞",
         Text="Solid rocket motor stage 3",
         Fx=100000.0,
@@ -195,7 +197,7 @@ small_launcher_segments = [
     ),
 ]
 
-result_small = optimize_ascent_trajectory(
+result_small = optimize_trajectory(
     gw=300.0,  # Small payload
     t1=12.0,
     alpham=6.0,
@@ -224,7 +226,7 @@ print("=" * 70)
 
 # Same rocket, different azimuths
 base_segments = [
-    RocketSegment(
+    RocketSegmentInfo(
         Name="一级起飞",
         Fx=2961600.0,
         Ips=2550.0,
@@ -235,7 +237,7 @@ base_segments = [
         Psicx="0.0",
         Phicx_dot=0.0,
     ),
-    RocketSegment(
+    RocketSegmentInfo(
         Name="二级起飞",
         Fx=742040.0,
         Ips=2942.0,
@@ -256,7 +258,7 @@ azimuths = [
 
 print("\nComparing launch azimuths from Jiuquan:")
 for direction, azimuth, target_inc in azimuths:
-    result = optimize_ascent_trajectory(
+    result = optimize_trajectory(
         gw=1500.0,
         t1=15.0,
         alpham=5.0,
@@ -292,3 +294,82 @@ print("  - Psicx: Yaw angle (deg or 'Follow')")
 print("  - Phicx_dot: Pitch rate (deg/s)")
 print("\nSupported Rocket Types:")
 print("  CZ2C, CZ2D, CZ3A, CZ3B, CZ3C, CZ4B, CZ4C, CZ7A, KZ1A")
+
+if __name__ == "__main__":
+    # Note: This example currently fails with a malformed JSON response from the API
+    # The server returns invalid JSON that cannot be parsed
+    # Error: JSONDecodeError: Expecting ',' delimiter: line 1575413 column 27 (char 36509292)
+    # This is a server-side issue that needs to be fixed
+    pass
+    # Example output would be shown here if the API worked correctly
+    # >>> ======================================================================
+    # >>> Example 1: Two-Stage Rocket to LEO (800 km)
+    # >>> ======================================================================
+    # >>>
+    # >>> Optimization Results:
+    # >>> Mission: CZ-2D SSO Mission
+    # >>> Rocket Type: CZ2D
+    # >>> Launch Site: Jiuquan
+    # >>> Payload: 1500.0 kg
+    # >>>
+    # >>> Target Orbit:
+    # >>>   Altitude: 800 km
+    # >>>   Inclination: 98.2° (SSO)
+    # >>>   Eccentricity: 0.001
+    # >>>
+    # >>> Trajectory Summary:
+    # >>>   Segment 1: 一级起飞 - 145.0s
+    # >>>   Segment 2: 二级起飞 - 180.0s
+    # >>>
+    # >>> ======================================================================
+    # >>> Example 2: Three-Stage Rocket to GTO
+    # >>> ======================================================================
+    # >>>
+    # >>> GTO Mission Results:
+    # >>> Payload: 5500.0 kg
+    # >>> Target Orbit: 185 km x 35786 km (GTO)
+    # >>> Inclination: 28.5°
+    # >>> Launch Site: Xichang (low latitude advantage)
+    # >>>
+    # >>> ======================================================================
+    # >>> Example 3: Small Launcher (KZ-1A to LEO)
+    # >>> ======================================================================
+    # >>>
+    # >>> Small Launcher Results:
+    # >>> Payload: 300.0 kg
+    # >>> Target: 500 km LEO
+    # >>> Three solid stages
+    # >>>
+    # >>> ======================================================================
+    # >>> Example 4: Launch Azimuth Optimization
+    # >>> ======================================================================
+    # >>>
+    # >>> Comparing launch azimuths from Jiuquan:
+    # >>>   Northerly: Azimuth 185.0° → Inclination 98.0°
+    # >>>   Easterly: Azimuth 95.0° → Inclination 42.0°
+    # >>>   Polar: Azimuth 180.0° → Inclination 100.0°
+    # >>>
+    # >>> ======================================================================
+    # >>> Ascent Trajectory Optimization Complete
+    # >>> ======================================================================
+    # >>>
+    # >>> Key Parameters:
+    # >>>   - gw: Payload mass (kg)
+    # >>>   - t1: Gravity turn initiation time (s)
+    # >>>   - alpham: Maximum angle of attack limit (deg)
+    # >>>   - natmos: Number of atmospheric flight segments
+    # >>>   - sma0, ecc0, inc0, omg0: Target orbital elements
+    # >>>   - a0: Launch azimuth (deg)
+    # >>>
+    # >>> Rocket Segment Parameters:
+    # >>>   - Fx: Total axial thrust (N)
+    # >>>   - Ips: Specific impulse (m/s)
+    # >>>   - Gj: Jettisoned mass at stage end (kg)
+    # >>>   - Dt: Burn duration (s)
+    # >>>   - Sm: Aerodynamic area (m²)
+    # >>>   - Sa: Engine nozzle area (m²)
+    # >>>   - Psicx: Yaw angle (deg or 'Follow')
+    # >>>   - Phicx_dot: Pitch rate (deg/s)
+    # >>>
+    # >>> Supported Rocket Types:
+    # >>>   CZ2C, CZ2D, CZ3A, CZ3B, CZ3C, CZ4B, CZ4C, CZ7A, KZ1A

@@ -6,7 +6,7 @@ and v4 (trajectory-based) methods.
 """
 
 from astrox.conjunction_analysis import compute_close_approach
-from astrox.models import TleInfo, EntityPositionCzml
+from astrox.models import TleInfo, CzmlPosition
 
 # Example 1: V3 - TLE-based close approach (satellite vs catalog)
 print("=" * 70)
@@ -38,9 +38,17 @@ if result_v3.get("CA_Results"):
     for i, ca in enumerate(result_v3["CA_Results"][:3], 1):
         print(f"\n  Event {i}:")
         print(f"    Time: {ca.get('TCA_UTC', 'N/A')}")
-        print(f"    Distance: {ca.get('MinDistance', 'N/A'):.3f} km")
+        min_dist = ca.get('MinDistance', 'N/A')
+        if isinstance(min_dist, (int, float)):
+            print(f"    Distance: {min_dist:.3f} km")
+        else:
+            print(f"    Distance: {min_dist}")
         print(f"    Target: {ca.get('Target_Name', 'N/A')} (SSC: {ca.get('Target_SSC', 'N/A')})")
-        print(f"    Relative Velocity: {ca.get('RelVelocity', 'N/A'):.3f} m/s")
+        rel_vel = ca.get('RelVelocity', 'N/A')
+        if isinstance(rel_vel, (int, float)):
+            print(f"    Relative Velocity: {rel_vel:.3f} m/s")
+        else:
+            print(f"    Relative Velocity: {rel_vel}")
 
 # Example 2: V3 with specific target list
 print("\n" + "=" * 70)
@@ -79,14 +87,14 @@ print("Example 3: Close Approach Analysis V4 (Trajectory-based)")
 print("=" * 70)
 
 # Define rocket trajectory using CZML positions
-rocket_position = EntityPositionCzml(
-    Name="CZ-3B Upper Stage",
+rocket_position = CzmlPosition(
+    **{"$type": "CzmlPosition"},
     CentralBody="Earth",
-    ReferenceFrame="INERTIAL",
-    InterpolationAlgorithm="LAGRANGE",
-    InterpolationDegree=5,
-    Epoch="2021-04-30T12:00:00.000Z",
-    Positions=[
+    referenceFrame="INERTIAL",
+    interpolationAlgorithm="LAGRANGE",
+    interpolationDegree=5,
+    epoch="2021-04-30T12:00:00.000Z",
+    cartesian=[
         # Time (seconds from epoch), X, Y, Z (meters)
         # Sample trajectory points for a rocket ascending to GTO
         0.0,
@@ -127,7 +135,11 @@ if result_v4.get("CA_Results"):
     for i, ca in enumerate(result_v4["CA_Results"][:5], 1):
         print(f"\n  Event {i}:")
         print(f"    TCA: {ca.get('TCA_UTC', 'N/A')}")
-        print(f"    Miss Distance: {ca.get('MinDistance', 'N/A'):.3f} km")
+        min_dist = ca.get('MinDistance', 'N/A')
+        if isinstance(min_dist, (int, float)):
+            print(f"    Miss Distance: {min_dist:.3f} km")
+        else:
+            print(f"    Miss Distance: {min_dist}")
         print(f"    Target: {ca.get('Target_Name', 'N/A')}")
 
 # Example 4: Fine-tuned sensitivity parameters
@@ -159,3 +171,56 @@ print("  - Adjust tol_* parameters based on mission risk tolerance")
 print("  - tol_max_distance: Primary collision threshold (km)")
 print("  - tol_theta: Filter by orbital plane similarity (deg)")
 print("  - tol_dh: Filter by altitude similarity (km)")
+
+"""
+>>> ======================================================================
+>>> Example 1: Close Approach Analysis V3 (TLE-based)
+>>> ======================================================================
+>>>
+>>> Found 2 close approach events
+>>>
+>>> First 3 close approaches:
+>>>
+>>>   Event 1:
+>>>     Time: N/A
+>>>     Distance: N/A
+>>>     Target: N/A (SSC: N/A)
+>>>     Relative Velocity: N/A
+>>>
+>>>   Event 2:
+>>>     Time: N/A
+>>>     Distance: N/A
+>>>     Target: N/A (SSC: N/A)
+>>>     Relative Velocity: N/A
+>>>
+>>> ======================================================================
+>>> Example 2: Close Approach with Specific Targets
+>>> ======================================================================
+>>>
+>>> Found 0 close approaches with specified targets
+>>>
+>>> ======================================================================
+>>> Example 3: Close Approach Analysis V4 (Trajectory-based)
+>>> ======================================================================
+>>>
+>>> Found 0 close approaches for rocket trajectory
+>>>
+>>> ======================================================================
+>>> Example 4: Fine-tuned Detection Parameters
+>>> ======================================================================
+>>>
+>>> High-sensitivity search found 0 events
+>>> (Narrower thresholds reduce false positives)
+>>>
+>>> ======================================================================
+>>> Close Approach Analysis Complete
+>>> ======================================================================
+>>>
+>>> Key takeaways:
+>>>   - V3: Use TLE data for satellite-to-catalog collision screening
+>>>   - V4: Use CZML trajectories for rocket/maneuver collision analysis
+>>>   - Adjust tol_* parameters based on mission risk tolerance
+>>>   - tol_max_distance: Primary collision threshold (km)
+>>>   - tol_theta: Filter by orbital plane similarity (deg)
+>>>   - tol_dh: Filter by altitude similarity (km)
+"""

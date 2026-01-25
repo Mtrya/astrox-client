@@ -203,3 +203,117 @@ print("  - Generate TLEs from propagated states")
 print("  - Create synthetic satellite catalogs")
 print("  - Convert between orbital element formats")
 print("  - Feed TLEs to SGP4 propagator")
+
+"""
+>>> ======================================================================
+>>> Example 1: LEO Satellite TLE Generation
+>>> ======================================================================
+>>>
+>>> Generated TLE for LEO satellite:
+>>> Name: ISS-LIKE
+>>> SSC: 99001
+>>>
+>>> TLE Line 1: 1 99001U 99999A   21120.50000000  .00000000  00000-0  00000-0 0  9995
+>>> TLE Line 2: 2 99001  51.6346 217.3462 0016077 284.8260 224.4008 15.56945662    01
+>>>
+>>> ======================================================================
+>>> Example 2: Geostationary Satellite TLE
+>>> ======================================================================
+>>>
+>>> Generated TLE for GEO satellite:
+>>> Name: GEO-COMSAT
+>>> TLE Line 1: 1 99002U 99999A   21120.00000000  .00000000  00000-0  00000-0 0  9991
+>>> TLE Line 2: 2 99002   0.0727  79.1489 0000989 356.0137 359.8399  1.00278301    05
+>>>
+>>> Orbital parameters:
+>>>   Altitude: 35785.9 km
+>>>   Inclination: 0.05 deg (near-equatorial)
+>>>   Eccentricity: 0.0001 (near-circular)
+>>>
+>>> ======================================================================
+>>> Example 3: Sun-Synchronous Orbit TLE
+>>> ======================================================================
+>>>
+>>> Generated TLE for SSO satellite:
+>>> Name: SSO-EARTH-OBS
+>>> TLE Line 1: 1 99003U 99999A   21120.25000000  .00000000  00000-0  00000-0 0  9999
+>>> TLE Line 2: 2 99003  98.1947 120.0000 0016452  90.0000   0.0000 14.54214189    00
+>>>
+>>> Orbital parameters:
+>>>   Altitude: 699.9 km
+>>>   Inclination: 98.2 deg (sun-synchronous)
+>>>   Period: ~99 minutes
+>>>
+>>> ======================================================================
+>>> Example 4: Molniya Orbit TLE
+>>> ======================================================================
+>>>
+>>> Generated TLE for Molniya satellite:
+>>> Name: MOLNIYA-COM
+>>> TLE Line 1: 1 99004U 99999A   21120.00000000  .00000000  00000-0  00000-0 0  9993
+>>> TLE Line 2: 2 99004  63.3929 179.9934 7394860 270.0278 359.9940  2.01855099    09
+>>>
+>>> Orbital parameters:
+>>>   Perigee altitude: 525.9 km
+>>>   Apogee altitude: 39825.8 km
+>>>   Inclination: 63.4 deg (critical)
+>>>   Period: ~12 hours
+>>>
+>>> ======================================================================
+>>> Example 5: Space Debris with High Drag
+>>> ======================================================================
+>>>
+>>> Generated TLE for high-drag debris:
+>>> Name: DEBRIS-FRAG
+>>> TLE Line 1: 1 99005U 99999A   21120.50000000  .00000000  00000-0  00000-0 0  9999
+>>> TLE Line 2: 2 99005  45.0000  89.9700 0099209 182.0798  42.1044 15.91446793    05
+>>>
+>>> Orbital parameters:
+>>>   Altitude: 299.9 km (low)
+>>>   B*: 0.001 (high drag - rapid decay expected)
+>>>
+>>> ======================================================================
+>>> Example 6: Constellation TLE Generation
+>>> ======================================================================
+>>>
+>>> Generating TLEs for 4-satellite constellation:
+>>>
+>>> Satellite 1:
+>>>   1 99010U 99999A   21120.00000000  .00000000  00000-0  00000-0 0  9990
+>>>   2 99010  55.0000 360.0000 0013149 319.5279  40.4720 14.27558710    01
+>>>
+>>> Satellite 2:
+>>>   1 99011U 99999A   21120.00000000  .00000000  00000-0  00000-0 0  9991
+>>>   2 99011  55.0000  90.0000 0013149 319.5279  40.4720 14.27558710    02
+>>>
+>>> Satellite 3:
+>>>   1 99012U 99999A   21120.00000000  .00000000  00000-0  00000-0 0  9992
+>>>   2 99012  55.0000 180.0000 0013149 319.5279  40.4720 14.27558710    03
+>>>
+>>> Satellite 4:
+>>>   1 99013U 99999A   21120.00000000  .00000000  00000-0  00000-0 0  9993
+>>>   2 99013  55.0000 270.0000 0013149 319.5279  40.4720 14.27558710    04
+>>>
+>>> ======================================================================
+>>> TLE Generation Complete
+>>> ======================================================================
+>>>
+>>> Key Parameters:
+>>>   - ssc: NORAD catalog number (5-digit string)
+>>>   - epoch: Element epoch in UTC (YYYY-MM-DDTHH:MM:SS.fffZ)
+>>>   - b_star: Drag coefficient (1/Earth radii)
+>>>     * LEO: 0.00001-0.0001 (typical)
+>>>     * High drag debris: 0.001+
+>>>     * GEO: ~0 (negligible)
+>>>   - sma: Semi-major axis in km
+>>>   - All angles in degrees, TEME reference frame
+>>>   - is_mean_elements:
+>>>     * True: Mean elements (removes short-period variations)
+>>>     * False: Osculating elements (instantaneous state)
+>>>
+>>> Use Cases:
+>>>   - Generate TLEs from propagated states
+>>>   - Create synthetic satellite catalogs
+>>>   - Convert between orbital element formats
+>>>   - Feed TLEs to SGP4 propagator
+"""

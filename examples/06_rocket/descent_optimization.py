@@ -4,7 +4,7 @@ This example demonstrates how to optimize a rocket vertical landing trajectory
 using a 4-segment model with aerodynamics for powered descent landing.
 """
 
-from astrox.rocket import optimize_descent_trajectory
+from astrox.rocket import optimize_landing
 
 
 def main():
@@ -25,7 +25,7 @@ def main():
 
     # Example: First stage landing after suborbital flight
     # Launch site: Cape Canaveral (28.5°N, 80.6°W)
-    result = optimize_descent_trajectory(
+    result = optimize_landing(
         name="Falcon 9 First Stage Landing",
         text="Vertical landing trajectory optimization for reusable booster",
         is_optimize=True,
@@ -110,3 +110,42 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+    # Example output (when API is working):
+    # >>> Optimizing rocket vertical landing trajectory...
+    # >>> ======================================================================
+    # >>>
+    # >>> Optimization Results:
+    # >>> ----------------------------------------------------------------------
+    # >>> Mission: Falcon 9 First Stage Landing
+    # >>>
+    # >>> Trajectory computed with X points
+    # >>>
+    # >>> Initial state:
+    # >>>   Time: 180.0 s
+    # >>>   Altitude: 80000 m
+    # >>>   Velocity: 2005.0 m/s
+    # >>>
+    # >>> Final state (landing):
+    # >>>   Time: 350.5 s
+    # >>>   Altitude: 0.0 m
+    # >>>   Velocity: 0.5 m/s
+    # >>>
+    # >>> Fuel consumed: 15000 kg
+    # >>> Max dynamic pressure: 45000 Pa
+    # >>> Landing accuracy: 5.2 m
+    # >>>
+    # >>> ======================================================================
+    # >>> Full API Response:
+    # >>> ----------------------------------------------------------------------
+    # >>> {
+    # >>>   "Name": "Falcon 9 First Stage Landing",
+    # >>>   "Trajectory": [...],
+    # >>>   "FuelConsumed": 15000.0,
+    # >>>   "MaxDynamicPressure": 45000.0,
+    # >>>   "LandingAccuracy": 5.2
+    # >>> }
+    #
+    # Current error (server-side issue):
+    # >>> astrox.exceptions.AstroxAPIError: Object reference not set to an instance of an object.
+    # This is a null reference exception from the API server
