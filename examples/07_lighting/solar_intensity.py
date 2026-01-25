@@ -21,17 +21,22 @@ def main():
 
     # LEO satellite in sun-synchronous orbit
     spacecraft = EntityPositionJ2(
-        OrbitEpoch="15 Jan 2024 00:00:00.000000",
-        CoordSystem="Inertial",
-        CoordType="Classical",
-        OrbitalElements=[
-            6928137.0,  # Semi-major axis (m) - ~550km altitude (typical SSO)
-            0.001,  # Eccentricity
-            97.6,  # Inclination (deg) - sun-synchronous
-            0.0,  # RAAN (deg)
-            0.0,  # Argument of perigee (deg)
-            0.0,  # True anomaly (deg)
-        ],
+        **{
+            "$type": "J2",
+            "OrbitEpoch": "15 Jan 2024 00:00:00.000000",
+            "CoordSystem": "Inertial",
+            "CoordType": "Classical",
+            "J2NormalizedValue": 0.000484165143790815,  # Earth J2 (EGM2008)
+            "RefDistance": 6378136.3,  # Earth equatorial radius (m, EGM2008)
+            "OrbitalElements": [
+                6928137.0,  # Semi-major axis (m) - ~550km altitude (typical SSO)
+                0.001,  # Eccentricity
+                97.6,  # Inclination (deg) - sun-synchronous
+                0.0,  # RAAN (deg)
+                0.0,  # Argument of perigee (deg)
+                0.0,  # True anomaly (deg)
+            ],
+        }
     )
 
     print(f"Analysis Period: {start} to {stop}")
@@ -126,3 +131,23 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+    # Example output:
+    # >>> ======================================================================
+    # >>> Solar Intensity Calculation for LEO Satellite
+    # >>> ======================================================================
+    # >>>
+    # >>> Analysis Period: 2024-01-15T00:00:00Z to 2024-01-15T06:00:00Z
+    # >>> Spacecraft Orbit:
+    # >>>   Altitude: ~550 km
+    # >>>   Inclination: 97.6° (Sun-synchronous)
+    # >>>   Period: ~95 minutes
+    # >>>
+    # >>> Calculating solar intensity with Earth occultation...
+    # >>>
+    # >>> Solar Intensity Results:
+    # >>> ----------------------------------------------------------------------
+    # >>> No solar intensity data returned.
+    # >>>
+    # >>> Solar intensity calculation completed successfully!
+    # >>> ======================================================================

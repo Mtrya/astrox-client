@@ -216,3 +216,39 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+    # Example output (when server-side error occurs):
+    # >>> ================================================================================
+    # >>> Example 1: Earth-Moon Libration Points (J2000 Epoch, v2 API)
+    # >>> ================================================================================
+    # >>>
+    # >>> Input:
+    # >>>   Epoch: 2000-01-01T12:00:00Z (J2000)
+    # >>>   Version: v2 (default)
+    # >>>   Central body: Earth (default)
+    # >>>   Reference frame: FIXED (default)
+    # >>>   Interpolation: LAGRANGE order 7 (default)
+    # >>>
+    # >>> Traceback (most recent call last):
+    # >>>   File "/home/betelgeuse/Developments/astrox-client/examples/08_orbit_system/libration_points.py", line 218, in <module>
+    # >>>     main()
+    # >>>   File "/home/betelgeuse/Developments/astrox-client/examples/08_orbit_system/libration_points.py", line 39, in main
+    # >>>     result = compute_earth_moon_libration(
+    # >>>         epoch=epoch,
+    # >>>         version="v2"
+    # >>>     )
+    # >>>   File "/home/betelgeuse/Developments/astrox-client/astrox/orbit_system.py", line 141, in compute_earth_moon_libration
+    # >>>     return sess.post(endpoint=endpoint, data=payload)
+    # >>>   File "/home/betelgeuse/Developments/astrox-client/astrox/_http.py", line 284, in post
+    # >>>     result = _make_request(
+    # >>>         endpoint=endpoint,
+    # >>>         method="POST",
+    # >>>         json=payload
+    # >>>     )
+    # >>>   File "/home/betelgeuse/Developments/astrox-client/astrox/_http.py", line 124, in _make_request
+    # >>>     raise exceptions.AstroxAPIError(
+    # >>>         f"API error ({response.status_code}): {message}"
+    # >>>     ) from e
+    # >>> astrox.exceptions.AstroxAPIError:    at AeroSpace.Models.EntityPositionCzml.GetDateMotionCollection()
+    # >>>    at AeroSpace.Models.EntityPositionCzml.CreatePoint()
+    # >>>    at AeroSpace.OrbitConverter.OrbitSystem.GetPosInEarthMoonLibrationFrame2(EntityPositionCzml input)

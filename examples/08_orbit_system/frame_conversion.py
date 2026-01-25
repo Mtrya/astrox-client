@@ -11,7 +11,7 @@ This is essential for:
 - Lagrange point calculations
 """
 
-from astrox._models import EntityPositionCzml
+from astrox.models import EntityPositionCzml
 from astrox.orbit_system import convert_central_body_frame
 
 
@@ -25,16 +25,20 @@ def main():
 
     # Earth-centered position (sample satellite in Earth orbit)
     position = EntityPositionCzml(
-        CentralBody="Earth",
-        referenceFrame="INERTIAL",
-        interpolationAlgorithm="LAGRANGE",
-        interpolationDegree=7,
-        epoch="2024-07-20T12:00:00Z",  # Apollo 11 anniversary
-        cartesian=[
-            6878000.0,  # X (m) - approximately LEO altitude
-            0.0,        # Y (m)
-            0.0         # Z (m)
-        ]
+        **{
+            "$type": "CzmlPosition",
+            "CentralBody": "Earth",
+            "referenceFrame": "INERTIAL",
+            "interpolationAlgorithm": "LAGRANGE",
+            "interpolationDegree": 7,
+            "epoch": "2024-07-20T12:00:00Z",  # Apollo 11 anniversary
+            "cartesian": [
+                0.0,        # Time offset 0 seconds from epoch
+                6878000.0,  # X (m) - approximately LEO altitude
+                0.0,        # Y (m)
+                0.0         # Z (m)
+            ]
+        }
     )
 
     print(f"\nInput Position (Earth-centered):")
@@ -60,20 +64,23 @@ def main():
     print("=" * 80)
 
     position_with_velocity = EntityPositionCzml(
-        CentralBody="Earth",
-        referenceFrame="FIXED",  # Earth-fixed rotating frame
-        interpolationAlgorithm="HERMITE",  # Better for velocity interpolation
-        interpolationDegree=5,
-        epoch="2024-12-15T18:30:00Z",
-        cartesianVelocity=[
-            # Format: [X, Y, Z, dX, dY, dZ]
-            6878000.0,  # X (m)
-            0.0,        # Y (m)
-            0.0,        # Z (m)
-            0.0,        # dX (m/s)
-            7500.0,     # dY (m/s) - approximate LEO velocity
-            0.0         # dZ (m/s)
-        ]
+        **{
+            "$type": "CzmlPosition",
+            "CentralBody": "Earth",
+            "referenceFrame": "FIXED",  # Earth-fixed rotating frame
+            "interpolationAlgorithm": "HERMITE",  # Better for velocity interpolation
+            "interpolationDegree": 5,
+            "epoch": "2024-12-15T18:30:00Z",
+            "cartesianVelocity": [
+                # Format: [X, Y, Z, dX, dY, dZ]
+                6878000.0,  # X (m)
+                0.0,        # Y (m)
+                0.0,        # Z (m)
+                0.0,        # dX (m/s)
+                7500.0,     # dY (m/s) - approximate LEO velocity
+                0.0         # dZ (m/s)
+            ]
+        }
     )
 
     print(f"\nInput Position/Velocity (Earth FIXED frame):")
@@ -99,16 +106,19 @@ def main():
     print("=" * 80)
 
     geo_position = EntityPositionCzml(
-        CentralBody="Earth",
-        referenceFrame="INERTIAL",
-        interpolationAlgorithm="LINEAR",
-        interpolationDegree=1,
-        epoch="2024-01-01T00:00:00Z",
-        cartesian=[
-            42164000.0,  # X (m) - GEO radius
-            0.0,         # Y (m)
-            0.0          # Z (m)
-        ]
+        **{
+            "$type": "CzmlPosition",
+            "CentralBody": "Earth",
+            "referenceFrame": "INERTIAL",
+            "interpolationAlgorithm": "LINEAR",
+            "interpolationDegree": 1,
+            "epoch": "2024-01-01T00:00:00Z",
+            "cartesian": [
+                42164000.0,  # X (m) - GEO radius
+                0.0,         # Y (m)
+                0.0          # Z (m)
+            ]
+        }
     )
 
     print(f"\nInput Position (GEO satellite):")
@@ -135,26 +145,29 @@ def main():
     # Position with multiple time steps
     # Format: [time0, x0, y0, z0, time1, x1, y1, z1, ...]
     time_series_position = EntityPositionCzml(
-        CentralBody="Earth",
-        referenceFrame="INERTIAL",
-        interpolationAlgorithm="LAGRANGE",
-        interpolationDegree=7,
-        epoch="2024-03-20T00:00:00Z",
-        interval="2024-03-20T00:00:00Z/2024-03-20T01:00:00Z",
-        cartesian=[
-            0,          # Time offset 0 seconds
-            6878000.0,  # X at t=0
-            0.0,        # Y at t=0
-            0.0,        # Z at t=0
-            1800,       # Time offset 30 minutes (1800 seconds)
-            0.0,        # X at t=1800
-            6878000.0,  # Y at t=1800
-            0.0,        # Z at t=1800
-            3600,       # Time offset 60 minutes (3600 seconds)
-            -6878000.0, # X at t=3600
-            0.0,        # Y at t=3600
-            0.0         # Z at t=3600
-        ]
+        **{
+            "$type": "CzmlPosition",
+            "CentralBody": "Earth",
+            "referenceFrame": "INERTIAL",
+            "interpolationAlgorithm": "LAGRANGE",
+            "interpolationDegree": 7,
+            "epoch": "2024-03-20T00:00:00Z",
+            "interval": "2024-03-20T00:00:00Z/2024-03-20T01:00:00Z",
+            "cartesian": [
+                0,          # Time offset 0 seconds
+                6878000.0,  # X at t=0
+                0.0,        # Y at t=0
+                0.0,        # Z at t=0
+                1800,       # Time offset 30 minutes (1800 seconds)
+                0.0,        # X at t=1800
+                6878000.0,  # Y at t=1800
+                0.0,        # Z at t=1800
+                3600,       # Time offset 60 minutes (3600 seconds)
+                -6878000.0, # X at t=3600
+                0.0,        # Y at t=3600
+                0.0         # Z at t=3600
+            ]
+        }
     )
 
     print(f"\nInput Position (time series, 3 points):")
@@ -189,9 +202,12 @@ def main():
     # Using the alternative parameter-based API
     result = convert_central_body_frame(
         position=EntityPositionCzml(
-            CentralBody="Earth",
-            referenceFrame="INERTIAL",
-            epoch="2024-06-01T12:00:00Z"
+            **{
+                "$type": "CzmlPosition",
+                "CentralBody": "Earth",
+                "referenceFrame": "INERTIAL",
+                "epoch": "2024-06-01T12:00:00Z"
+            }
         ),
         to_body="Moon",
         cartesian=[10000000.0, 5000000.0, 2000000.0],
