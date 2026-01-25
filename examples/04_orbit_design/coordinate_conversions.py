@@ -206,3 +206,99 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+    # Example output:
+    # >>> ================================================================================
+    # >>> Example 1: Kepler Elements → Position/Velocity Vectors
+    # >>> ================================================================================
+    # >>>
+    # >>> Input Kepler Elements (ISS-like LEO orbit):
+    # >>>   Semi-major axis: 6,778,000 m (~400 km altitude)
+    # >>>   Eccentricity: 0.0005 (nearly circular)
+    # >>>   Inclination: 51.6°
+    # >>>   Argument of periapsis: 0.0°
+    # >>>   RAAN: 45.0°
+    # >>>   True anomaly: 30.0°
+    # >>>
+    # >>> Result (Position and Velocity):
+    # >>>   Position X: 2660998.308 m
+    # >>>   Position Y: 5636727.335 m
+    # >>>   Position Z: 2654786.906 m
+    # >>>   Velocity dX: -5629.905 m/s
+    # >>>   Velocity dY: 207.360 m/s
+    # >>>   Velocity dZ: 5207.697 m/s
+    # >>>
+    # >>> ================================================================================
+    # >>> Example 2: Position/Velocity Vectors → Kepler Elements
+    # >>> ================================================================================
+    # >>>
+    # >>> Input Position/Velocity:
+    # >>>   Position: [42164000.0, 0.0, 0.0] m
+    # >>>   Velocity: [0.000, 3074.660, 0.000] m/s
+    # >>>
+    # >>> Result (Kepler Elements):
+    # >>>   {'SemimajorAxis': 42163827.647893235, 'Eccentricity': 4.087676958594802e-06, 'Inclination': 0, 'ArgumentOfPeriapsis': 180, 'RightAscensionOfAscendingNode': 0, 'TrueAnomaly': 180, 'GravitationalParameter': 398600441800000}
+    # >>>
+    # >>> ================================================================================
+    # >>> Example 3: Kepler → Lat/Lon/Alt at Ascending Node
+    # >>> ================================================================================
+    # >>>
+    # >>> Input Kepler Elements (SSO orbit):
+    # >>>   Semi-major axis: 7,178,000 m (~800 km altitude)
+    # >>>   Eccentricity: 0.001 (nearly circular)
+    # >>>   Inclination: 98.0° (sun-synchronous)
+    # >>>   Argument of periapsis: 0.0°
+    # >>>   RAAN: 120.0°
+    # >>>   True anomaly: 0.0°
+    # >>>   Epoch: 2024-06-21T12:00:00.000Z
+    # >>>
+    # >>> Result (LLA at Ascending Node):
+    # >>>   Latitude: 4.849971°
+    # >>>   Longitude: -0.066663°
+    # >>>   Altitude: 792685.029 m
+    # >>>
+    # >>> ================================================================================
+    # >>> Example 4: GEO Lambert Transfer Delta-V Calculation
+    # >>> ================================================================================
+    # >>>
+    # >>> Platform orbit (GEO):
+    # >>>   Semi-major axis: 42,164 km
+    # >>>   Inclination: 0.0°
+    # >>>   RAAN: 0.0°
+    # >>>
+    # >>> Target orbit (inclined GEO):
+    # >>>   Semi-major axis: 42,164 km
+    # >>>   Inclination: 5.0°
+    # >>>   RAAN: 90.0°
+    # >>>
+    # >>> Transfer time: 3600.0 seconds (1 hour)
+    # >>>
+    # >>> Result (Delta-V components):
+    # >>>   [-14207.954217415605, 8634.823122814667, 274.2412632717466, -12029.609281278354, 11491.90043294306, -8.33619858941259]
+    # >>>
+    # >>> ================================================================================
+    # >>> Example 5: Kozai-Izsak Mean Elements (J2 Perturbations)
+    # >>> ================================================================================
+    # >>>
+    # >>> Input Osculating Kepler Elements (LEO circular orbit):
+    # >>>   Semi-major axis: 6,928,000 m (~550 km altitude)
+    # >>>   Eccentricity: 0.0 (circular)
+    # >>>   Inclination: 55.0°
+    # >>>   Argument of periapsis: 0.0°
+    # >>>   RAAN: 30.0°
+    # >>>   True anomaly: 45.0°
+    # >>>
+    # >>> Result (Mean Kepler Elements accounting for J2):
+    # >>>   {'SemimajorAxis': 6928001.251186955, 'Eccentricity': 0.0003079965619241003, 'Inclination': 55.00000171983196, 'ArgOfPerigee': -43.31561485972555, 'RAAN': 29.97742491696035, 'MeanAnomaly': 88.28887549135636, 'ArgOfLatitude': 45.00853910300361, 'LongitudeOfPerigee': 346.6618100572348, 'MeanLongitude': 74.95068554859117}
+    # >>>
+    # >>> Note: Mean elements account for J2 short-period perturbations,
+    # >>>       providing more stable orbital parameters for propagation.
+    # >>>
+    # >>> ================================================================================
+    # >>> Summary of Conversion Functions:
+    # >>>   1. kepler_to_rv: Classical elements → Cartesian state vectors
+    # >>>   2. rv_to_kepler: Cartesian state vectors → Classical elements
+    # >>>   3. kepler_to_lla_at_ascending_node: Elements → Ground track position
+    # >>>   4. geo_lambert_transfer_dv: Calculate transfer maneuver delta-V
+    # >>>   5. kozai_izsak_mean_elements: Osculating → Mean elements (J2)
+    # >>> ================================================================================
