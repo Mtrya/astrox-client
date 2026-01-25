@@ -7,8 +7,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 from astrox._http import HTTPClient, get_session
-from astrox._models import TerrainMaskConfig
-from astrox.models import EntityPositionSite
+from astrox._models import TerrainMaskConfig, EntityPositionSite
 
 __all__ = ["get_terrain_mask"]
 

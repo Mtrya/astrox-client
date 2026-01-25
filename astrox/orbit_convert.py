@@ -7,7 +7,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 from astrox._http import HTTPClient, get_session
-from astrox.models import KeplerElements
+from astrox._models import KeplerElements
 
 __all__ = [
     "kepler_to_rv",

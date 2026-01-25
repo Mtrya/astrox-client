@@ -8,9 +8,9 @@ from pydantic import BaseModel
 
 from astrox._http import HTTPClient, get_session
 from astrox._models import (
-    MCSProfile,
+    IVAMCSProfile,
     RocketGuid,
-    RocketSegment,
+    RocketSegmentInfo,
     VAMCSProfileDEOptimizer,
 )
 
@@ -26,7 +26,7 @@ def optimize_ascent_trajectory(
     t1: float,
     alpham: float,
     natmos: int,
-    rocket_segments: list[RocketSegment],
+    rocket_segments: list[RocketSegmentInfo],
     sma0: float,
     ecc0: float,
     inc0: float,
@@ -41,7 +41,7 @@ def optimize_ascent_trajectory(
     a0: Optional[float] = None,
     aero_params_file_name: Optional[str] = None,
     profile_optim: Optional[VAMCSProfileDEOptimizer] = None,
-    mcs_profiles: Optional[list[MCSProfile]] = None,
+    mcs_profiles: Optional[list[IVAMCSProfile]] = None,
     session: Optional[HTTPClient] = None,
 ) -> dict:
     """Optimize rocket ascent trajectory using flight segment model.

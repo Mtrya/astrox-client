@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Optional
 
 from astrox._http import HTTPClient, get_session
-from astrox.models import KeplerElements
+from astrox._models import KeplerElements
 
 __all__ = ["design_geo", "design_molniya", "design_sso", "design_walker"]
 

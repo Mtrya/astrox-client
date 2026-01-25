@@ -7,8 +7,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 from astrox._http import HTTPClient, get_session
-from astrox._models import IEntityPosition
-from astrox.models import EntityPositionSite
+from astrox._models import IEntityPosition, EntityPositionSite
 
 __all__ = ["lighting_times", "solar_intensity", "solar_aer"]
 
