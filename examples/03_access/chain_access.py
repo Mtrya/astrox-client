@@ -3,6 +3,10 @@ Compute access chain through multiple objects.
 
 This example demonstrates relay satellite access chain computation
 from ground transmitter → relay satellites → ground receiver.
+
+Known Issue: The /access/ChainCompute endpoint occasionally returns
+HTTP 500 errors due to server-side instability. The client implementation
+is correct, but the server may fail. See issues.md for details.
 """
 
 from astrox.access import compute_chain
@@ -20,6 +24,14 @@ def main():
     print("Access Chain Computation: Ground → Relay Satellites → Ground")
     print("=" * 70)
     print()
+
+    print("WARNING: This example may fail with HTTP 500 (server-side error).")
+    print("The /access/ChainCompute endpoint can be unstable on the server.")
+    print("See examples/03_access/issues.md for details.")
+    print()
+    print("=" * 70)
+    print()
+
 
     # Define analysis time window
     start = "2022-04-25T00:00:00Z"

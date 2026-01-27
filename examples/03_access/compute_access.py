@@ -3,6 +3,9 @@ Compute access between satellite and ground station.
 
 This example demonstrates satellite-to-ground station access computation
 with sensor constraints and AER calculations.
+
+The API returns access windows (passes) with detailed Azimuth, Elevation,
+and Range (AER) data for each time step during the access interval.
 """
 
 from astrox.access import compute_access
@@ -84,32 +87,42 @@ def main():
     print("Access Results:")
     print("-" * 70)
 
-    if "AccessData" in result and result["AccessData"]:
-        access_intervals = result["AccessData"]
+    if "Passes" in result and result["Passes"]:
+        access_intervals = result["Passes"]
         print(f"Total Access Intervals: {len(access_intervals)}")
         print()
 
         for i, interval in enumerate(access_intervals, 1):
             print(f"Access Window {i}:")
-            print(f"  Start: {interval.get('Start')}")
-            print(f"  Stop:  {interval.get('Stop')}")
+            print(f"  Start: {interval.get('AccessStart')}")
+            print(f"  Stop:  {interval.get('AccessStop')}")
             print(f"  Duration: {interval.get('Duration', 0):.2f} seconds")
 
-            if "AccessAER" in interval and interval["AccessAER"]:
-                aer_data = interval["AccessAER"]
+            # AccessAER data points (if compute_aer=True)
+            if "AllDatas" in interval and interval["AllDatas"]:
+                aer_data = interval["AllDatas"]
                 print(f"  AER Data Points: {len(aer_data)}")
 
                 # Show first and last AER data point
                 first = aer_data[0]
-                print(f"    First: Az={first.get('Azimuth', 0):.2f}°, "
+                print(f"    First: Time={first.get('Time', 'N/A')}, "
+                      f"Az={first.get('Azimuth', 0):.2f}°, "
                       f"El={first.get('Elevation', 0):.2f}°, "
                       f"Range={first.get('Range', 0)/1000:.2f}km")
 
                 if len(aer_data) > 1:
                     last = aer_data[-1]
-                    print(f"    Last:  Az={last.get('Azimuth', 0):.2f}°, "
+                    print(f"    Last:  Time={last.get('Time', 'N/A')}, "
+                          f"Az={last.get('Azimuth', 0):.2f}°, "
                           f"El={last.get('Elevation', 0):.2f}°, "
                           f"Range={last.get('Range', 0)/1000:.2f}km")
+            elif "MinElevationData" in interval and interval["MinElevationData"]:
+                # Summary data available even without AllDatas
+                min_el = interval["MinElevationData"]
+                max_el = interval["MaxElevationData"] if "MaxElevationData" in interval else None
+                print(f"  Elevation: Min={min_el.get('Elevation', 0):.2f}° at {min_el.get('Time', 'N/A')}")
+                if max_el:
+                    print(f"            Max={max_el.get('Elevation', 0):.2f}° at {max_el.get('Time', 'N/A')}")
             print()
     else:
         print("No access windows found during the analysis period.")
