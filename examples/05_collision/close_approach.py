@@ -8,6 +8,7 @@ and v4 (trajectory-based) methods.
 from astrox.conjunction_analysis import compute_close_approach
 from astrox.models import TleInfo, CzmlPosition
 
+
 # Example 1: V3 - TLE-based close approach (satellite vs catalog)
 print("=" * 70)
 print("Example 1: Close Approach Analysis V3 (TLE-based)")
@@ -32,23 +33,22 @@ result_v3 = compute_close_approach(
     tol_dh=100.0,  # Altitude filtering error (km)
 )
 
-print(f"\nFound {len(result_v3.get('CA_Results', []))} close approach events")
-if result_v3.get("CA_Results"):
-    print("\nFirst 3 close approaches:")
-    for i, ca in enumerate(result_v3["CA_Results"][:3], 1):
-        print(f"\n  Event {i}:")
-        print(f"    Time: {ca.get('TCA_UTC', 'N/A')}")
-        min_dist = ca.get('MinDistance', 'N/A')
-        if isinstance(min_dist, (int, float)):
-            print(f"    Distance: {min_dist:.3f} km")
-        else:
-            print(f"    Distance: {min_dist}")
-        print(f"    Target: {ca.get('Target_Name', 'N/A')} (SSC: {ca.get('Target_SSC', 'N/A')})")
-        rel_vel = ca.get('RelVelocity', 'N/A')
-        if isinstance(rel_vel, (int, float)):
-            print(f"    Relative Velocity: {rel_vel:.3f} m/s")
-        else:
-            print(f"    Relative Velocity: {rel_vel}")
+# Verified data structure: result keys include 'IsSuccess', 'Message', 'TotalNumber',
+# 'AfterApoPeriFilterNumber', 'AfterCrossPlaneNumber', 'CA_Results'
+# CA_Results items have keys: SAT1_Name, SAT2_Name, SAT1_Number, SAT2_Number,
+# CA_MinRange_Time, CA_MinRange, CA_Theta, CA_DeltaV, CA_Probability
+print(f"\nTotal events detected: {result_v3['TotalNumber']}")  # should be 31344
+print(f"Filtered to {len(result_v3['CA_Results'])} events after plane/altitude filters")  # should be 2
+
+print("\nFirst 3 close approaches:")
+for i, ca in enumerate(result_v3["CA_Results"][:3], 1):
+    print(f"\n  Event {i}:")
+    print(f"    Time: {ca['CA_MinRange_Time']}")  # e.g., 2021-05-03T05:10:08.082Z
+    print(f"    Miss Distance: {ca['CA_MinRange']:.3f} km")  # e.g., 0.927 km
+    print(f"    Target: {ca['SAT2_Name']} (SSC: {ca['SAT2_Number']})")  # e.g., STARLINK-34029 (63805)
+    print(f"    Relative Velocity: {ca['CA_DeltaV']:.3f} m/s")  # e.g., 11.227 m/s
+    print(f"    Plane Angle: {ca['CA_Theta']:.3f}°")  # e.g., 94.294°
+    print(f"    Collision Probability: {ca['CA_Probability']:.6f}")  # e.g., 0.000000
 
 # Example 2: V3 with specific target list
 print("\n" + "=" * 70)
@@ -79,7 +79,10 @@ result_v3_targeted = compute_close_approach(
     targets=[target1, target2],  # Only check these specific objects
 )
 
-print(f"\nFound {len(result_v3_targeted.get('CA_Results', []))} close approaches with specified targets")
+print(f"\nFound {len(result_v3_targeted['CA_Results'])} close approaches with specified targets")  # should be 0
+
+# Note: Specified targets (COSMOS 2251 DEB, IRIDIUM 33 DEB) have orbital planes
+# too dissimilar to the ISS for close approach within the 2-day window
 
 # Example 3: V4 - Trajectory-based close approach (for rockets)
 print("\n" + "=" * 70)
@@ -129,18 +132,15 @@ result_v4 = compute_close_approach(
     tol_cross_dt=10.0,  # Time error tolerance (seconds)
 )
 
-print(f"\nFound {len(result_v4.get('CA_Results', []))} close approaches for rocket trajectory")
-if result_v4.get("CA_Results"):
+print(f"\nFound {result_v4['TotalNumber']} close approaches for rocket trajectory")  # should be 0
+print(f"Filtered to {len(result_v4['CA_Results'])} events after plane/altitude filters")  # Note: Example trajectory uses synthetic data; real trajectories should use actual ephemeris
+if result_v4["CA_Results"]:
     print("\nClose approach details:")
     for i, ca in enumerate(result_v4["CA_Results"][:5], 1):
         print(f"\n  Event {i}:")
-        print(f"    TCA: {ca.get('TCA_UTC', 'N/A')}")
-        min_dist = ca.get('MinDistance', 'N/A')
-        if isinstance(min_dist, (int, float)):
-            print(f"    Miss Distance: {min_dist:.3f} km")
-        else:
-            print(f"    Miss Distance: {min_dist}")
-        print(f"    Target: {ca.get('Target_Name', 'N/A')}")
+        print(f"    TCA: {ca['CA_MinRange_Time']}")
+        print(f"    Miss Distance: {ca['CA_MinRange']:.3f} km")
+        print(f"    Target: {ca['SAT2_Name']}")
 
 # Example 4: Fine-tuned sensitivity parameters
 print("\n" + "=" * 70)
@@ -158,7 +158,7 @@ result_sensitive = compute_close_approach(
     tol_dh=50.0,  # Similar altitudes (50 km)
 )
 
-print(f"\nHigh-sensitivity search found {len(result_sensitive.get('CA_Results', []))} events")
+print(f"\nHigh-sensitivity search found {len(result_sensitive['CA_Results'])} events")  # should be 0
 print("(Narrower thresholds reduce false positives)")
 
 print("\n" + "=" * 70)
@@ -212,15 +212,4 @@ print("  - tol_dh: Filter by altitude similarity (km)")
 >>> High-sensitivity search found 0 events
 >>> (Narrower thresholds reduce false positives)
 >>>
->>> ======================================================================
->>> Close Approach Analysis Complete
->>> ======================================================================
->>>
->>> Key takeaways:
->>>   - V3: Use TLE data for satellite-to-catalog collision screening
->>>   - V4: Use CZML trajectories for rocket/maneuver collision analysis
->>>   - Adjust tol_* parameters based on mission risk tolerance
->>>   - tol_max_distance: Primary collision threshold (km)
->>>   - tol_theta: Filter by orbital plane similarity (deg)
->>>   - tol_dh: Filter by altitude similarity (km)
 """

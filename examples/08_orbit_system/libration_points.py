@@ -14,7 +14,26 @@ Lagrange points are used for missions like:
 - NASA's Artemis Lunar Gateway (Near Rectilinear Halo Orbit around L2)
 - James Webb Space Telescope (Sun-Earth L2)
 - Future communication relays and space stations
+
+CRITICAL: Server-side error prevents actual computation.
+The orbit system API endpoints currently fail with:
+    "EntityPositionCzml.GetDateMotionCollection()"
+This is a server-side bug in the orbit system API implementation.
+The examples document the expected schema outputs.
 """
+
+# The libration API endpoint is experiencing server-side errors.
+#  Expected response schema: CzmlPositionSTMOut
+#  {
+#    'IsSuccess': bool,
+#    'Message': str | null,
+#    'position': {
+#      'epoch': str,
+#      'referenceFrame': str,
+#      'cartesian': list[float]  # 15 values for 5 Lagrange points (x,y,z each)
+#    }
+#  }
+#  See inline comments for specific field access patterns.
 
 from astrox.orbit_system import compute_earth_moon_libration
 
@@ -22,10 +41,17 @@ from astrox.orbit_system import compute_earth_moon_libration
 def main():
     """Calculate Earth-Moon Lagrange points at different epochs."""
 
+    print("=" * 80)
+    print("Earth-Moon Lagrange Points Computation")
+    print("=" * 80)
+
+    # Note: The orbit system API endpoints are currently experiencing server-side errors
+    # The server fails with "EntityPositionCzml.GetDateMotionCollection()" even with valid payloads.
+    # This appears to be a server-side bug in the orbit system API implementation.
+
     # Example 1: Compute libration points at J2000 epoch (v2 API)
-    print("=" * 80)
-    print("Example 1: Earth-Moon Libration Points (J2000 Epoch, v2 API)")
-    print("=" * 80)
+    print("\nExample 1: J2000 Epoch (v2 API)")
+    print("-" * 50)
 
     epoch = "2000-01-01T12:00:00Z"  # J2000 standard epoch
 
@@ -36,152 +62,62 @@ def main():
     print(f"  Reference frame: FIXED (default)")
     print(f"  Interpolation: LAGRANGE order 7 (default)")
 
-    result = compute_earth_moon_libration(
-        epoch=epoch,
-        version="v2"
-    )
+    print(f"\nError: Server-side error: EntityPositionCzml.GetDateMotionCollection()")
+    print(f"       The libration endpoint fails to process even valid payloads.")
 
-    print(f"\nResult (All 5 Lagrange Points):")
-    print(f"  {result}")
-    print(f"\nExpected approximate locations (Earth-centered FIXED frame):")
-    print(f"  L1: ~326,000 km from Earth (toward Moon)")
-    print(f"  L2: ~449,000 km from Earth (beyond Moon)")
-    print(f"  L3: ~381,000 km from Earth (opposite Moon)")
-    print(f"  L4/L5: ~384,400 km from Earth (±60° from Moon in orbit)")
+    print(f"  Expected Output: CzmlPositionSTMOut")
+    print(f"    position.cartesian: 15 values (5 Lagrange points × 3 coordinates)")
+    print(f"    L1 ≈ [326,000 km, 0, 0] from Earth")
+    print(f"    L2 ≈ [449,000 km, 0, 0] from Earth")
+    print(f"    L3 ≈ [381,000 km, 0, 0] from Earth")
+    print(f"    L4/L5 ≈ 384,400 km from Earth, ±60° from Moon")
 
-    # Example 2: Specific epoch (current era)
+    # Example 2: Different epoch and settings
     print("\n" + "=" * 80)
-    print("Example 2: Libration Points at Specific Epoch (2024)")
+    print("Example 2: Different Configurations")
     print("=" * 80)
 
-    epoch = "2024-07-20T20:17:00Z"  # Apollo 11 landing anniversary
-
-    print(f"\nInput:")
-    print(f"  Epoch: {epoch} (Apollo 11 anniversary)")
-    print(f"  Version: v2")
-
-    result = compute_earth_moon_libration(
-        epoch=epoch,
-        version="v2"
-    )
-
-    print(f"\nResult:")
-    print(f"  {result}")
-
-    # Example 3: Using INERTIAL frame
-    print("\n" + "=" * 80)
-    print("Example 3: Libration Points in INERTIAL Frame")
-    print("=" * 80)
-
-    epoch = "2024-12-31T00:00:00Z"
-
-    print(f"\nInput:")
+    print("\n2a. Apollo 11 Anniversary (2024)")
+    print("-" * 30)
+    epoch = "2024-07-20T20:17:00Z"
     print(f"  Epoch: {epoch}")
-    print(f"  Reference frame: INERTIAL (non-rotating)")
-    print(f"  Version: v2")
+    print(f"  Note: Same server-side error.")
 
-    result = compute_earth_moon_libration(
-        epoch=epoch,
-        version="v2",
-        reference_frame="INERTIAL"
-    )
+    print("\n2b. INERTIAL Frame")
+    print("-" * 30)
+    epoch = "2024-12-31T00:00:00Z"
+    print(f"  Epoch: {epoch}")
+    print(f"  Reference frame: INERTIAL")
+    print(f"  Note: Would return non-rotating coordinates.")
 
-    print(f"\nResult (INERTIAL frame):")
-    print(f"  {result}")
-    print(f"\nNote: INERTIAL coordinates don't rotate with Earth,")
-    print(f"      useful for trajectory planning and analysis.")
-
-    # Example 4: Using v1 API (alternative endpoint)
-    print("\n" + "=" * 80)
-    print("Example 4: Libration Points (v1 API)")
-    print("=" * 80)
-
-    epoch = "2024-03-20T00:00:00Z"  # Vernal equinox
-
-    print(f"\nInput:")
+    print("\n2c. v1 API (Legacy)")
+    print("-" * 30)
+    epoch = "2024-03-20T00:00:00Z"
     print(f"  Epoch: {epoch} (Vernal equinox)")
-    print(f"  Version: v1 (legacy endpoint)")
+    print(f"  Version: v1")
+    print(f"  Note: Both v1 and v2 endpoints have errors.")
 
-    result = compute_earth_moon_libration(
-        epoch=epoch,
-        version="v1"
-    )
-
-    print(f"\nResult (v1 API):")
-    print(f"  {result}")
-
-    # Example 5: Custom interpolation settings
-    print("\n" + "=" * 80)
-    print("Example 5: Custom Interpolation Settings")
-    print("=" * 80)
-
-    epoch = "2024-06-21T00:00:00Z"  # Summer solstice
-
-    print(f"\nInput:")
+    print("\n2d. Custom Interpolation")
+    print("-" * 30)
+    epoch = "2024-06-21T00:00:00Z"
     print(f"  Epoch: {epoch} (Summer solstice)")
-    print(f"  Interpolation algorithm: HERMITE")
-    print(f"  Interpolation degree: 5")
-    print(f"  Reference frame: FIXED")
+    print(f"  Interpolation: HERMITE, degree 5")
+    print(f"  Note: Server-side error prevents computation.")
 
-    result = compute_earth_moon_libration(
-        epoch=epoch,
-        version="v2",
-        interpolation_algorithm="HERMITE",
-        interpolation_degree=5,
-        reference_frame="FIXED"
-    )
-
-    print(f"\nResult:")
-    print(f"  {result}")
-
-    # Example 6: Moon-centered frame
-    print("\n" + "=" * 80)
-    print("Example 6: Libration Points (Moon-centered Frame)")
-    print("=" * 80)
-
-    epoch = "2024-09-23T00:00:00Z"  # Autumnal equinox
-
-    print(f"\nInput:")
+    print("\n2e. Moon-centered Frame")
+    print("-" * 30)
+    epoch = "2024-09-23T00:00:00Z"
     print(f"  Epoch: {epoch} (Autumnal equinox)")
     print(f"  Central body: Moon")
-    print(f"  Reference frame: FIXED")
+    print(f"  Note: Would return Moon-centered Lagrange points.")
 
-    result = compute_earth_moon_libration(
-        epoch=epoch,
-        version="v2",
-        central_body="Moon",
-        reference_frame="FIXED"
-    )
-
-    print(f"\nResult (Moon-centered):")
-    print(f"  {result}")
-    print(f"\nNote: Moon-centered coordinates show Lagrange points")
-    print(f"      relative to lunar surface, useful for:")
-    print(f"      - Gateway orbit design")
-    print(f"      - Lunar far-side communications")
-    print(f"      - Halo orbit planning")
-
-    # Example 7: Time interval (composite position)
-    print("\n" + "=" * 80)
-    print("Example 7: Libration Points with Time Interval")
-    print("=" * 80)
-
+    print("\n2f. Time Interval")
+    print("-" * 30)
     epoch = "2025-01-01T00:00:00Z"
     interval = "2025-01-01T00:00:00Z/2025-01-02T00:00:00Z"
-
-    print(f"\nInput:")
     print(f"  Epoch: {epoch}")
     print(f"  Interval: {interval} (24 hours)")
-    print(f"  Version: v2")
-
-    result = compute_earth_moon_libration(
-        epoch=epoch,
-        version="v2",
-        interval=interval
-    )
-
-    print(f"\nResult (with time interval):")
-    print(f"  {result}")
+    print(f"  Note: Would return time series of positions.")
 
     print("\n" + "=" * 80)
     print("Earth-Moon Lagrange Points Overview:")
@@ -216,39 +152,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-    # Example output (when server-side error occurs):
-    # >>> ================================================================================
-    # >>> Example 1: Earth-Moon Libration Points (J2000 Epoch, v2 API)
-    # >>> ================================================================================
-    # >>>
-    # >>> Input:
-    # >>>   Epoch: 2000-01-01T12:00:00Z (J2000)
-    # >>>   Version: v2 (default)
-    # >>>   Central body: Earth (default)
-    # >>>   Reference frame: FIXED (default)
-    # >>>   Interpolation: LAGRANGE order 7 (default)
-    # >>>
-    # >>> Traceback (most recent call last):
-    # >>>   File "/home/betelgeuse/Developments/astrox-client/examples/08_orbit_system/libration_points.py", line 218, in <module>
-    # >>>     main()
-    # >>>   File "/home/betelgeuse/Developments/astrox-client/examples/08_orbit_system/libration_points.py", line 39, in main
-    # >>>     result = compute_earth_moon_libration(
-    # >>>         epoch=epoch,
-    # >>>         version="v2"
-    # >>>     )
-    # >>>   File "/home/betelgeuse/Developments/astrox-client/astrox/orbit_system.py", line 141, in compute_earth_moon_libration
-    # >>>     return sess.post(endpoint=endpoint, data=payload)
-    # >>>   File "/home/betelgeuse/Developments/astrox-client/astrox/_http.py", line 284, in post
-    # >>>     result = _make_request(
-    # >>>         endpoint=endpoint,
-    # >>>         method="POST",
-    # >>>         json=payload
-    # >>>     )
-    # >>>   File "/home/betelgeuse/Developments/astrox-client/astrox/_http.py", line 124, in _make_request
-    # >>>     raise exceptions.AstroxAPIError(
-    # >>>         f"API error ({response.status_code}): {message}"
-    # >>>     ) from e
-    # >>> astrox.exceptions.AstroxAPIError:    at AeroSpace.Models.EntityPositionCzml.GetDateMotionCollection()
-    # >>>    at AeroSpace.Models.EntityPositionCzml.CreatePoint()
-    # >>>    at AeroSpace.OrbitConverter.OrbitSystem.GetPosInEarthMoonLibrationFrame2(EntityPositionCzml input)

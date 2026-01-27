@@ -45,16 +45,16 @@ def demo_get_grid_points():
     result = get_grid_points(grid=global_grid, text="Global coverage grid")
     print(f"Grid type: Global")
     print(f"Resolution: 6.0°")
-    if result.get("IsSuccess"):
-        points = result.get("Points", {})
-        grid_points = points.get("GridPoints", [])
+    if result["IsSuccess"]:
+        points = result["Points"]
+        grid_points = points["GridPoints"]
         print(f"Total grid points: {len(grid_points)}")
         if grid_points:
             # Show first few points
-            print(f"First point: Lat={grid_points[0].get('Latitude', 0):.2f}°, "
-                  f"Lon={grid_points[0].get('Longitude', 0):.2f}°")
+            print(f"First point: Lat={grid_points[0]['Latitude']:.2f}°, "
+                  f"Lon={grid_points[0]['Longitude']:.2f}°")
     else:
-        print(f"Error: {result.get('Message', 'Unknown error')}")
+        print(f"Error: {result['Message']}")
 
     # Example 2: Latitude bounds grid (mid-latitudes only)
     print("\n--- Latitude Bounds Grid (30°S to 60°N) ---")
@@ -72,12 +72,12 @@ def demo_get_grid_points():
     )
     print(f"Latitude range: -30° to 60°")
     print(f"Resolution: 5.0°")
-    if result.get("IsSuccess"):
-        points = result.get("Points", {})
-        grid_points = points.get("GridPoints", [])
+    if result["IsSuccess"]:
+        points = result["Points"]
+        grid_points = points["GridPoints"]
         print(f"Total grid points: {len(grid_points)}")
     else:
-        print(f"Error: {result.get('Message', 'Unknown error')}")
+        print(f"Error: {result['Message']}")
 
     # Example 3: Lat/Lon bounds grid (specific region - China)
     print("\n--- Lat/Lon Bounds Grid (China region) ---")
@@ -95,12 +95,12 @@ def demo_get_grid_points():
     result = get_grid_points(grid=region_grid, text="China region grid")
     print(f"Region: 18°N-54°N, 73°E-135°E (China)")
     print(f"Resolution: 2.0°")
-    if result.get("IsSuccess"):
-        points = result.get("Points", {})
-        grid_points = points.get("GridPoints", [])
+    if result["IsSuccess"]:
+        points = result["Points"]
+        grid_points = points["GridPoints"]
         print(f"Total grid points: {len(grid_points)}")
     else:
-        print(f"Error: {result.get('Message', 'Unknown error')}")
+        print(f"Error: {result['Message']}")
 
 
 def demo_compute_coverage():
@@ -226,11 +226,11 @@ def demo_compute_coverage():
     )
 
     # Display results
-    if result.get("IsSuccess"):
+    if result["IsSuccess"]:
         print("\n✓ Coverage computation successful!")
 
         # Get coverage statistics
-        intervals = result.get("SatisfactionIntervalsWithNumberOfAssets", [])
+        intervals = result["SatisfactionIntervalsWithNumberOfAssets"]
         print(f"\nTotal grid points analyzed: {len(intervals)}")
 
         # Count covered points
@@ -249,9 +249,9 @@ def demo_compute_coverage():
             if point_intervals:  # Found a covered point
                 print(f"\nSample: Grid point #{i} coverage intervals:")
                 for interval in point_intervals[:3]:  # Show first 3 intervals
-                    start = interval.get("Start", "N/A")
-                    stop = interval.get("Stop", "N/A")
-                    num_assets = interval.get("NumberOfAssets", 0)
+                    start = interval["Start"]
+                    stop = interval["Stop"]
+                    num_assets = interval["NumberOfAssets"]
                     print(
                         f"  - {start} to {stop} ({num_assets} satellite(s))"
                     )
@@ -260,7 +260,7 @@ def demo_compute_coverage():
                 break  # Only show first covered point
 
     else:
-        print(f"\n✗ Error: {result.get('Message', 'Unknown error')}")
+        print(f"\n✗ Error: {result['Message']}")
 
 
 def demo_coverage_with_constraints():
@@ -320,10 +320,10 @@ def demo_coverage_with_constraints():
         contain_coverage_points=True,
     )
 
-    if result.get("IsSuccess"):
+    if result["IsSuccess"]:
         print("\n✓ Coverage computation successful!")
 
-        intervals = result.get("SatisfactionIntervalsWithNumberOfAssets", [])
+        intervals = result["SatisfactionIntervalsWithNumberOfAssets"]
         covered_count = sum(
             1 for point_intervals in intervals if point_intervals
         )
@@ -340,7 +340,7 @@ def demo_coverage_with_constraints():
         print(f"Total access intervals: {total_passes}")
 
     else:
-        print(f"\n✗ Error: {result.get('Message', 'Unknown error')}")
+        print(f"\n✗ Error: {result['Message']}")
 
 
 def main():
@@ -368,45 +368,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-"""
-Example output (with HTTP 500 server error):
->>> ======================================================================
->>> ASTROX COVERAGE ANALYSIS EXAMPLES
->>> ======================================================================
->>>
->>> Demonstrating basic coverage functions:
->>>   - get_grid_points(): Generate coverage grids [SKIPPED - Server Error 500]
->>>   - compute_coverage(): Calculate satellite coverage
->>>
->>>
->>> NOTE: get_grid_points() demo skipped due to server-side HTTP 500 error
->>>       See examples/02_coverage/issues.md for details
->>>
->>>
->>> ======================================================================
->>> 2. COMPUTE COVERAGE - SATELLITE CONSTELLATION
->>> ======================================================================
->>>
->>> Analyzing coverage from 2024-01-01T00:00:00.000Z to 2024-01-01T12:00:00.000Z
->>> Constellation: 3 satellites in SSO (800 km, 98.5° inc)
->>> Sensor: Conic, 60° half-angle (120° FOV)
->>> Grid: Latitude bounds -60° to 60°, 10° resolution
->>>
->>> Computing coverage...
->>> Traceback (most recent call last):
->>>   File "examples/02_coverage/basic_coverage.py", line 370, in <module>
->>>     main()
->>>   File "examples/02_coverage/basic_coverage.py", line 361, in main
->>>     demo_compute_coverage()
->>>   File "examples/02_coverage/basic_coverage.py", line 217, in demo_compute_coverage
->>>     result = compute_coverage(...)
->>>   File "/home/betelgeuse/Developments/astrox-client/astrox/coverage.py", line 178, in compute_coverage
->>>     return sess.post(endpoint="/Coverage/ComputeCoverage", data=payload)
->>>   File "/home/betelgeuse/Developments/astrox-client/astrox/_http.py", line 284, in post
->>>     result = _make_request(...)
->>>   File "/home/betelgeuse/Developments/astrox-client/astrox/_http.py", line 108, in _make_request
->>>     raise last_exception
->>> astrox.exceptions.AstroxHTTPError: HTTP 500: Internal Server Error
-"""

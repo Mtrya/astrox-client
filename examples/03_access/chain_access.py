@@ -183,13 +183,10 @@ def main():
     #               IndividualObjectAccess: dict}
     # TimeIntervalData: {Start: str, Stop: str, Duration: float}
 
-    # Check IsSuccess flag
-    if not result["IsSuccess"]:
-        print(f"Computation failed: {result['Message']}")
-        return
-
-    # CompleteChainAccess contains list of TimeIntervalData with Start, Stop, Duration
+    # Access result fields directly - HTTPClient handles IsSuccess flag checks
+    # and raises AstroxAPIError if IsSuccess is false
     chain_intervals = result["CompleteChainAccess"]
+
     if not chain_intervals:
         print("No complete access chains found.")
         print("Note: Complete chains require simultaneous access across all links.")

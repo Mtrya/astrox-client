@@ -2,6 +2,17 @@
 
 This example demonstrates how to calculate rocket trajectories using
 guidance algorithms for various Chinese launch vehicles.
+
+STATUS: The guidance endpoint returns a validation error indicating that
+the GJ_dL parameter value is too small (currently 0). This suggests
+required configuration parameters are missing from the request.
+The error message from the API is: "GJ_dL数值太小,当前数值为:0"
+
+The RocketGuidCZ3BC model has a GJ_dL field (一级关机射程数值) that represents
+the first stage shutdown range value in meters. This field is marked as optional
+in the schema but is actually required by the server-side validation logic.
+Setting it to a reasonable value (e.g., 200000 for 200 km downrange) may
+resolve the validation error.
 """
 
 from astrox.rocket import compute_guided_trajectory
@@ -25,6 +36,9 @@ def main():
 
     print("Calculating rocket trajectory with CZ3BC guidance...")
     print("=" * 70)
+    print("NOTE: This endpoint returns validation error: GJ_dL value too small (0)")
+    print("      Required parameters are missing from the configuration.")
+    print()
 
     # Example: Long March 3B/C guidance for GTO mission
     # Using the RocketGuidCZ3BC model with required parameters
@@ -36,63 +50,62 @@ def main():
         # Target orbit: GTO (185 km x 35786 km)
         Guid_RV_2k=[24578137.0, 0.0, 0.0, 0.0, 10000.0, 0.0],  # Stage 2 cutoff state (example)
         Guid_RV_3k=[24578137.0, 0.0, 0.0, 0.0, 10000.0, 0.0],  # Stage 3 cutoff state (example)
-        # Most other fields have defaults and are optional
+        # Server requires these guidance parameters (marked optional but validation fails)
+        GJ_dL=200000.0,     # 一级关机射程数值(m) - First stage shutdown range
+        GJ_Va=7500.0,       # (二级)速度关机数值(m/s) - Second stage velocity shutdown
+        GJ_Sma1=24578137.0, # (三级)一次关机半长轴数值(m) - Third stage first shutdown semi-major axis
+        GJ_Sma2=42164137.0, # (三级)二次关机半长轴数值(m) - Third stage second shutdown semi-major axis (GTO)
+        # ERROR: Still missing Guid_RV_32k parameter - validation continues to fail
+        # This demonstrates that the API requires many undocumented mandatory fields
     )
 
-    result = compute_guided_trajectory(guidance_config)
+    result = compute_guided_trajectory(guidance_config)  # Expected: Returns trajectory with Name, Trajectory, AchievedOrbit, FuelConsumed, FlightTime
 
-    print("\nGuidance Calculation Results:")
+    print("\nGuidance Calculation Results:")  # Expected: Mission: CZ3BC GTO Mission
     print("-" * 70)
 
     # Display mission info
-    if "Name" in result:
-        print(f"Mission: {result['Name']}")
+    print(f"Mission: {result['Name']}")  # Expected: "CZ3BC GTO Mission"
 
     # Check for trajectory data
-    if "Trajectory" in result:
-        traj = result["Trajectory"]
-        print(f"\nTrajectory computed with {len(traj)} state points")
+    traj = result["Trajectory"]
+    print(f"\nTrajectory computed with {len(traj)} state points")
 
-        # Analyze trajectory phases
-        if traj:
-            print("\nLiftoff:")
-            print(f"  Time: {traj[0].get('Time', 'N/A')} s")
-            print(f"  Altitude: {traj[0].get('Altitude', 'N/A')} m")
+    # Analyze trajectory phases
+    print("\nLiftoff:")
+    print(f"  Time: {traj[0]['Time']} s")
+    print(f"  Altitude: {traj[0]['Altitude']} m")
 
-            # Find MECO (Main Engine Cutoff) - when altitude increases significantly
-            meco_point = traj[len(traj) // 3]  # Rough estimate
-            print(f"\nApproximate MECO:")
-            print(f"  Time: {meco_point.get('Time', 'N/A')} s")
-            print(f"  Altitude: {meco_point.get('Altitude', 'N/A')} m")
-            print(f"  Velocity: {meco_point.get('Velocity', 'N/A')} m/s")
+    # Find MECO (Main Engine Cutoff) - when altitude increases significantly
+    meco_point = traj[len(traj) // 3]  # Rough estimate
+    print(f"\nApproximate MECO:")
+    print(f"  Time: {meco_point['Time']} s")
+    print(f"  Altitude: {meco_point['Altitude']} m")
+    print(f"  Velocity: {meco_point['Velocity']} m/s")
 
-            # Final orbital insertion
-            print(f"\nOrbital Insertion:")
-            print(f"  Time: {traj[-1].get('Time', 'N/A')} s")
-            print(f"  Altitude: {traj[-1].get('Altitude', 'N/A')} m")
-            print(f"  Velocity: {traj[-1].get('Velocity', 'N/A')} m/s")
+    # Final orbital insertion
+    print(f"\nOrbital Insertion:")
+    print(f"  Time: {traj[-1]['Time']} s")
+    print(f"  Altitude: {traj[-1]['Altitude']} m")
+    print(f"  Velocity: {traj[-1]['Velocity']} m/s")
 
     # Check for achieved orbit
-    if "AchievedOrbit" in result:
-        orbit = result["AchievedOrbit"]
-        print("\nAchieved Orbit:")
-        print(f"  Perigee: {orbit.get('Perigee', 'N/A')} km")
-        print(f"  Apogee: {orbit.get('Apogee', 'N/A')} km")
-        print(f"  Inclination: {orbit.get('Inclination', 'N/A')} deg")
+    orbit = result["AchievedOrbit"]
+    print("\nAchieved Orbit:")
+    print(f"  Perigee: {orbit['Perigee']} km")
+    print(f"  Apogee: {orbit['Apogee']} km")
+    print(f"  Inclination: {orbit['Inclination']} deg")
 
     # Check for performance metrics
-    if "FuelConsumed" in result:
-        print(f"\nTotal fuel consumed: {result['FuelConsumed']} kg")
-
-    if "FlightTime" in result:
-        print(f"Total flight time: {result['FlightTime']} s")
+    print(f"\nTotal fuel consumed: {result['FuelConsumed']} kg")  # Expected: ~425000 kg
+    print(f"Total flight time: {result['FlightTime']} s")  # Expected: ~850 s
 
     # Display full result
     print("\n" + "=" * 70)
     print("Full API Response:")
     print("-" * 70)
     import json
-    print(json.dumps(result, indent=2, ensure_ascii=False))
+    print(json.dumps(result, indent=2, ensure_ascii=False))  # Expected: Complete guidance trajectory data
 
     print("\n" + "=" * 70)
     print("Note: Different rocket types (CZ2CD, CZ4BC, KZ1A, CZ7A) may require")
@@ -102,51 +115,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-    # Example output (when API is working):
-    # >>> Calculating rocket trajectory with CZ3BC guidance...
-    # >>> ======================================================================
-    # >>>
-    # >>> Guidance Calculation Results:
-    # >>> ----------------------------------------------------------------------
-    # >>> Mission: CZ3BC GTO Mission
-    # >>>
-    # >>> Trajectory computed with 1500 state points
-    # >>>
-    # >>> Liftoff:
-    # >>>   Time: 0.0 s
-    # >>>   Altitude: 0.0 m
-    # >>>
-    # >>> Approximate MECO:
-    # >>>   Time: 145.5 s
-    # >>>   Altitude: 65000 m
-    # >>>   Velocity: 2350 m/s
-    # >>>
-    # >>> Orbital Insertion:
-    # >>>   Time: 850.2 s
-    # >>>   Altitude: 185000 m
-    # >>>   Velocity: 10250 m/s
-    # >>>
-    # >>> Achieved Orbit:
-    # >>>   Perigee: 185 km
-    # >>>   Apogee: 35786 km
-    # >>>   Inclination: 28.5 deg
-    # >>>
-    # >>> Total fuel consumed: 425000 kg
-    # >>> Total flight time: 850.2 s
-    # >>>
-    # >>> ======================================================================
-    # >>> Full API Response:
-    # >>> ----------------------------------------------------------------------
-    # >>> {
-    # >>>   "Name": "CZ3BC GTO Mission",
-    # >>>   "Trajectory": [...],
-    # >>>   "AchievedOrbit": {...},
-    # >>>   "FuelConsumed": 425000.0,
-    # >>>   "FlightTime": 850.2
-    # >>> }
-    #
-    # Current error:
-    # >>> astrox.exceptions.AstroxAPIError: GJ_dL数值太小,当前数值为:0
-    # This means "GJ_dL value is too small, current value is: 0"
-    # The RocketGuidCZ3BC model requires more parameters than shown in this example

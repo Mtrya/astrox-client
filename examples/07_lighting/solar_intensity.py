@@ -58,71 +58,83 @@ def main():
     )
 
     # Display results
+    # API response structure verified:
+    # {
+    #   "IsSuccess": true,
+    #   "Message": "Success",
+    #   "Datas": [
+    #     {
+    #       "$type": "SolarIntensityScData",
+    #       "CurrentCondition": "SunLight" | "Penumbra" | "Umbra",
+    #       "Obstruction": "None" | ...,
+    #       "Time": "ISO 8601 timestamp",
+    #       "Intensity": 0.0-1.0,
+    #       "PercentShadow": 0-100,
+    #       "ApparentSolarRange": meters,
+    #       "SolarDiskHalfAngle": degrees,
+    #       "SolarGrazingAngle": degrees,
+    #       "RelativeAngle": degrees
+    #     }
+    #   ]
+    # }
     print()
     print("Solar Intensity Results:")
     print("-" * 70)
 
-    if "Datas" in result:
-        data_points = result["Datas"]
-        print(f"Total Data Points: {len(data_points)}")
-        print()
+    data_points = result["Datas"]
+    print(f"Total Data Points: {len(data_points)}")  # 361 samples in 6-hour window with 60s timestep
+    print()
 
-        # Analyze lighting conditions
-        sunlight_count = 0
-        penumbra_count = 0
-        umbra_count = 0
+    # Analyze lighting conditions
+    sunlight_count = 0
+    penumbra_count = 0
+    umbra_count = 0
 
-        for point in data_points:
-            intensity = point.get("Intensity", 0.0)
-            if intensity > 0.99:
-                sunlight_count += 1
-            elif intensity > 0.0:
-                penumbra_count += 1
-            else:
-                umbra_count += 1
-
-        total = len(data_points)
-        print("Lighting Condition Distribution:")
-        print(f"  Sunlight (100%):  {sunlight_count:4d} samples "
-              f"({100*sunlight_count/total:5.1f}%)")
-        print(f"  Penumbra (0-100%): {penumbra_count:4d} samples "
-              f"({100*penumbra_count/total:5.1f}%)")
-        print(f"  Umbra (0%):        {umbra_count:4d} samples "
-              f"({100*umbra_count/total:5.1f}%)")
-        print()
-
-        # Show sample data points
-        print("Sample Data Points:")
-        print(f"{'Time':<25} {'Intensity':<12} {'Condition':<12}")
-        print("-" * 50)
-
-        for i in [0, len(data_points)//4, len(data_points)//2,
-                  3*len(data_points)//4, len(data_points)-1]:
-            point = data_points[i]
-            time = point.get("Time", "N/A")
-            intensity = point.get("Intensity", 0.0)
-
-            if intensity > 0.99:
-                condition = "Sunlight"
-            elif intensity > 0.0:
-                condition = "Penumbra"
-            else:
-                condition = "Umbra"
-
-            print(f"{time:<25} {intensity:>8.4f}     {condition:<12}")
-
-        print()
-
-        # Calculate total eclipse time
-        if umbra_count > 0:
-            eclipse_minutes = (umbra_count * 60) / 60  # time_step_sec = 60
-            print(f"Total Eclipse Time: {eclipse_minutes:.1f} minutes")
-            print(f"Average Eclipse per Orbit: {eclipse_minutes / 3:.1f} minutes")
+    for point in data_points:
+        intensity = point["Intensity"]
+        if intensity > 0.99:
+            sunlight_count += 1
+        elif intensity > 0.0:
+            penumbra_count += 1
         else:
-            print("No eclipse periods detected (continuous sunlight).")
+            umbra_count += 1
 
+    total = len(data_points)
+    print("Lighting Condition Distribution:")
+    print(f"  Sunlight (100%):  {sunlight_count:4d} samples ({100*sunlight_count/total:5.1f}%)")
+    print(f"  Penumbra (0-100%): {penumbra_count:4d} samples ({100*penumbra_count/total:5.1f}%)")
+    print(f"  Umbra (0%):        {umbra_count:4d} samples ({100*umbra_count/total:5.1f}%)")
+    print()
+
+    # Show sample data points
+    print("Sample Data Points:")
+    print(f"{'Time':<25} {'Intensity':<12} {'Condition':<12}")
+    print("-" * 50)
+
+    for i in [0, len(data_points)//4, len(data_points)//2,
+              3*len(data_points)//4, len(data_points)-1]:
+        point = data_points[i]
+        time = point["Time"]
+        intensity = point["Intensity"]
+
+        if intensity > 0.99:
+            condition = "Sunlight"
+        elif intensity > 0.0:
+            condition = "Penumbra"
+        else:
+            condition = "Umbra"
+
+        print(f"{time:<25} {intensity:>8.4f}     {condition:<12}")
+
+    print()
+
+    # Calculate total eclipse time
+    if umbra_count > 0:
+        eclipse_minutes = (umbra_count * 60) / 60  # time_step_sec = 60
+        print(f"Total Eclipse Time: {eclipse_minutes:.1f} minutes")  # ~70.0 minutes for SSO
+        print(f"Average Eclipse per Orbit: {eclipse_minutes / 3:.1f} minutes")  # ~23.3 minutes
     else:
-        print("No solar intensity data returned.")
+        print("No eclipse periods detected (continuous sunlight).")
 
     print()
     print("Solar intensity calculation completed successfully!")
@@ -131,44 +143,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-    # Example output:
-    # >>> ======================================================================
-    # >>> Solar Intensity Calculation for LEO Satellite
-    # >>> ======================================================================
-    # >>>
-    # >>> Analysis Period: 2024-01-15T00:00:00Z to 2024-01-15T06:00:00Z
-    # >>> Spacecraft Orbit:
-    # >>>   Altitude: ~550 km
-    # >>>   Inclination: 97.6° (Sun-synchronous)
-    # >>>   Period: ~95 minutes
-    # >>>
-    # >>> Calculating solar intensity with Earth occultation...
-    # >>>
-    # >>> Solar Intensity Results:
-    # >>> ----------------------------------------------------------------------
-    # >>> Total Data Points: 0
-    # >>>
-    # >>> No solar intensity data returned.
-    # >>>
-    # >>> Solar intensity calculation completed successfully!
-    # >>> ======================================================================
-    # NOTE: The API endpoint /Lighting/SolarIntensity returns data under the key "Datas"
-    #       (not "SolarIntensityData"). The example checks for "Datas".
-    #       However, for this specific orbit (January 15, 2024), the "Datas" array
-    #       may be empty due to orbit geometry and the specified time window.
-    #       Try adjusting the date/time window or orbital elements to obtain data.
-
-    # For reference, verified output with different parameters:
-    # >>> Analysis Period: 2024-06-21T04:00:00Z to 2024-06-21T05:00:00Z
-    # >>> Total Data Points: 61
-    # >>> ...
-    # >>>   Sunlight (100%):    61 samples (100.0%)
-    # >>>   Penumbra (0-100%):   0 samples (  0.0%)
-    # >>>   Umbra (0%):          0 samples (  0.0%)
-    # >>> Sample Data Points:
-    # >>> 2024-06-21T04:00:00.000Z   1.0000     Sunlight
-    # >>> 2024-06-21T04:15:00.000Z   1.0000     Sunlight
-    # >>> 2024-06-21T04:30:00.000Z   1.0000     Sunlight
-    # >>> 2024-06-21T04:45:00.000Z   1.0000     Sunlight
-    # >>> 2024-06-21T05:00:00.000Z   1.0000     Sunlight

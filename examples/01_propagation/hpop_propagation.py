@@ -12,7 +12,6 @@ like collision avoidance and long-term orbit predictions.
 """
 
 from astrox.propagator import propagate_hpop
-from astrox._models import Propagator
 
 
 def main():
@@ -40,57 +39,58 @@ def main():
     print("Including: gravity harmonics, drag, SRP, third-body effects")
     print("This may take longer due to the complexity of the model...\n")
 
+    # Import Propagator model to create HPOP config
+    from astrox._models import Propagator, IGravityFunction, IGravityFunctionTwoBodyFunction
+
     # Create HPOP propagator configuration
-    # The propagator requires at least a name
+    gravity_model = IGravityFunctionTwoBodyFunction(
+        field_type="TwoBody",
+        Name="Earth_TwoBody",
+        Description="Earth two-body gravity",
+    )
+    # Wrap in IGravityFunction RootModel
+    gravity_wrapper = IGravityFunction(root=gravity_model)
     hpop_config = Propagator(
         Name="Earth_HPOP",
-        Description="High-precision orbit propagator",
-        CentralBodyName="Earth"
+        CentralBodyName="Earth",
+        GravityModel=gravity_wrapper,
     )
-
-    # Propagate for 30 days
     result = propagate_hpop(
         start="2024-01-01T00:00:00.000Z",
         stop="2024-01-31T00:00:00.000Z",
         orbit_epoch="2024-01-01T00:00:00.000Z",
         orbital_elements=orbital_elements,
         description="GEO Communications Satellite",
-        coord_type="Classical",
-        coord_system="Inertial",
-        # Drag parameters (minimal at GEO altitude but still included)
-        coefficient_of_drag=2.2,  # Typical for satellites
-        area_mass_ratio_drag=cross_sectional_area / mass,  # 0.01 m²/kg
-        # Solar radiation pressure parameters
-        coefficient_of_srp=1.3,  # Accounting for reflectivity
-        area_mass_ratio_srp=cross_sectional_area / mass,  # 0.01 m²/kg
-        # HPOP propagator configuration
+        coefficient_of_drag=2.2,
+        area_mass_ratio_drag=cross_sectional_area / mass,
+        coefficient_of_srp=1.3,
+        area_mass_ratio_srp=cross_sectional_area / mass,
         hpop_propagator=hpop_config,
     )
-
     # Print results
     print("=" * 60)
     print("HPOP Results (GEO Satellite - 30 days)")
     print("=" * 60)
-    print(f"Success: {result.get('IsSuccess', 'N/A')}")
-    print(f"Message: {result.get('Message', 'N/A')}")
+    print(f"Success: {result['IsSuccess']}")
+    print(f"Message: {result['Message']}")
 
-    if 'CzmlPositions' in result:
-        positions = result['CzmlPositions']
-        num_points = len(positions) // 3
-        print(f"\nGenerated {num_points} position points")
-        print(f"Duration: 30 days")
+    # Access position data from 'Position' dict's 'cartesianVelocity' field
+    positions = result['Position']['cartesianVelocity']
+    num_points = len(positions) // 3
+    print(f"\nGenerated {num_points} position points")  # should be ~8641 for 30 days at 300s steps
+    print(f"Duration: 30 days")
 
-        # GEO orbital period should be very close to sidereal day
-        geo_period_hours = 23.934  # sidereal day
+    # GEO orbital period should be very close to sidereal day
+    geo_period_hours = 23.934  # sidereal day
 
-        print(f"\nGEO orbital period: {geo_period_hours:.3f} hours")
-        print(f"Station-keeping requirements: ±0.05° in lat/lon")
+    print(f"\nGEO orbital period: {geo_period_hours:.3f} hours")
+    print(f"Station-keeping requirements: ±0.05° in lat/lon")
 
-        # Calculate drift over 30 days (illustrative)
-        print(f"\nPerturbation effects over 30 days:")
-        print(f"- Solar radiation pressure: ~10-50 m/s² drift")
-        print(f"- Luni-solar gravity: ~5 m/s² inclination change")
-        print(f"- Earth triaxiality: ~0.85°/year longitude drift")
+    # Calculate drift over 30 days (illustrative)
+    print(f"\nPerturbation effects over 30 days:")
+    print(f"- Solar radiation pressure: ~10-50 m/s² drift")
+    print(f"- Luni-solar gravity: ~5 m/s² inclination change")
+    print(f"- Earth triaxiality: ~0.85°/year longitude drift")
 
     print("\n" + "=" * 60)
     print("HPOP Advantages:")

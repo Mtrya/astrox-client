@@ -189,9 +189,8 @@ result = compute_coverage(
     contain_coverage_points=True,
 )
 
-if result.get("IsSuccess"):
-    intervals = result.get("SatisfactionIntervalsWithNumberOfAssets", [])
-    # Process coverage intervals...
+intervals = result["SatisfactionIntervalsWithNumberOfAssets"]
+# Process coverage intervals...
 ```
 
 ### Calculating FOMs
@@ -209,9 +208,8 @@ result = fom_coverage_time(
     step=120.0,
 )
 
-if result.get("IsSuccess"):
-    mean_time = result.get("Mean", 0)
-    print(f"Mean coverage time: {mean_time / 3600:.2f} hours")
+mean_time = result["Mean"]
+print(f"Mean coverage time: {mean_time / 3600:.2f} hours")
 
 # Revisit time FOM
 result = fom_revisit_time(
@@ -223,9 +221,8 @@ result = fom_revisit_time(
     step=120.0,
 )
 
-if result.get("IsSuccess"):
-    mean_revisit = result.get("Mean", 0)
-    print(f"Mean revisit time: {mean_revisit / 60:.1f} minutes")
+mean_revisit = result["Mean"]
+print(f"Mean revisit time: {mean_revisit / 60:.1f} minutes")
 ```
 
 ### Generating Reports
@@ -242,12 +239,11 @@ result = report_coverage_by_asset(
     step=180.0,
 )
 
-if result.get("IsSuccess"):
-    for data in result.get("CoverageByAssetDatas", []):
-        name = data.get("AssetName")
-        avg_pct = data.get("AveragePercentCovered", 0)
-        cum_pct = data.get("CumulativePercentCovered", 0)
-        print(f"{name}: Avg={avg_pct:.2f}%, Cumul={cum_pct:.2f}%")
+for data in result["CoverageByAssetDatas"]:
+    name = data["AssetName"]
+    avg_pct = data["AveragePercentCovered"]
+    cum_pct = data["CumulativePercentCovered"]
+    print(f"{name}: Avg={avg_pct:.2f}%, Cumul={cum_pct:.2f}%")
 
 # Overall coverage percentage over time
 result = report_percent_coverage(
@@ -258,10 +254,9 @@ result = report_percent_coverage(
     step=600.0,
 )
 
-if result.get("IsSuccess"):
-    instant_data = result.get("InstantaneousPercentCoverages", [])
-    cumul_data = result.get("CumulativePercentCoverages", [])
-    # Process time series data...
+instant_data = result["InstantaneousPercentCoverages"]
+cumul_data = result["CumulativePercentCoverages"]
+# Process time series data...
 ```
 
 ## Grid Resolution Guidelines

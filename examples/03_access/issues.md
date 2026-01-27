@@ -11,22 +11,31 @@
 
 **Error**: `astrox.exceptions.AstroxHTTPError: HTTP 500: Internal Server Error`
 
-**API Response Structure**:
+**Verified Behavior** (tested 2026-01-27):
+- The endpoint `/access/ChainCompute` exists in the OpenAPI spec
+- The payload format is correct (includes all required discriminators: `$type` fields)
+- The HTTPClient correctly raises `AstroxHTTPError` for HTTP 500 responses
+- The example code now accesses fields directly without defensive `IsSuccess` checks
+- When the server returns HTTP 500, the code fails naturally, revealing the server-side issue
+
+**Expected Response Structure** (from OpenAPI spec):
 ```json
 {
-  "IsSuccess": false,
-  "Message": "Internal server error",
-  "ComputedStrands": null,
-  "CompleteChainAccess": null,
-  "IndividualStrandAccess": null,
-  "IndividualObjectAccess": null
+  "IsSuccess": bool,
+  "Message": str,
+  "ComputedStrands": list[list[str]] | null,
+  "CompleteChainAccess": list[TimeIntervalData] | null,
+  "IndividualStrandAccess": dict | null,
+  "IndividualObjectAccess": dict | null
 }
 ```
+where `TimeIntervalData` has: `{Start: str, Stop: str, Duration: float}`
 
 **Notes**:
-- The payload format is correct (includes all required discriminators)
-- The endpoint exists in the OpenAPI spec
-- This appears to be a server-side bug in chain computation
+- This is a server-side bug in chain computation (returns HTTP 500 instead of HTTP 200 with `IsSuccess: false`)
+- The client implementation is correct
+- The HTTPClient already checks for `IsSuccess` flag and raises `AstroxAPIError` if false
+- Examples should not duplicate this check - let errors propagate naturally
 
 **Recommendation**: Skip `compute_chain()` examples until server-side issue is resolved.
 

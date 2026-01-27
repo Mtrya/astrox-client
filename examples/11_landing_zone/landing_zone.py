@@ -2,9 +2,50 @@
 
 This example demonstrates how to compute landing zone parameters for
 rocket stages or debris impact areas.
+
+The API returns landing zone vertices as a flattened array of cartographic
+coordinates in degrees: [lon1, lat1, alt1, lon2, lat2, alt2, ...]
+where longitude and latitude are in degrees, and altitude is in meters.
 """
 
 from astrox.landing_zone import compute_landing_zone
+
+
+def parse_cartographic_degrees(result):
+    """Parse cartographicDegrees array and display zone information.
+
+    Args:
+        result: API response dict containing cartographicDegrees array
+
+    API Response Schema:
+        {
+            "IsSuccess": bool,      # indicates API call success
+            "Message": str,         # status message from API
+            "cartographicDegrees": [lon1, lat1, alt1, lon2, lat2, alt2, ...]
+        }
+        where longitude and latitude are in degrees, altitude in meters
+    """
+    coords = result["cartographicDegrees"]
+    num_vertices = len(coords) // 3
+    print(f"Number of vertices: {num_vertices}")  # should be 4
+    print("Zone vertices (geographic coordinates):")
+    for i in range(num_vertices):
+        idx = i * 3
+        lon = coords[idx]          # degrees
+        lat = coords[idx + 1]      # degrees
+        alt = coords[idx + 2]      # meters
+        vertex_num = i + 1
+        print(f"  Vertex {vertex_num}: Lon={lon:.6f}°, Lat={lat:.6f}°, Alt={alt:.3f}m")
+        # Example formatted output (actual values will vary):
+        #   Vertex 1: Lon=-74.954089°, Lat=27.770377°, Alt=2.938m
+
+    # Calculate center as centroid of all vertices
+    center_lon = sum(coords[0::3]) / num_vertices
+    center_lat = sum(coords[1::3]) / num_vertices
+    center_alt = sum(coords[2::3]) / num_vertices
+    print(f"\nZone center (centroid): Lon={center_lon:.6f}°, Lat={center_lat:.6f}°, Alt={center_alt:.3f}m")
+    # Example formatted output (actual values will vary):
+    #   Zone center (centroid): Lon=-75.000003°, Lat=27.799991°, Alt=2.936m
 
 
 def main():
@@ -50,20 +91,8 @@ def main():
         ]
     )
 
-    print("\nLanding Zone Results:")
-    if "ZoneVertices" in result1:
-        print("Zone vertices (geographic coordinates):")
-        for i, vertex in enumerate(result1["ZoneVertices"], 1):
-            print(f"  Point {i}: Lon={vertex.get('Lon', 'N/A')}°, "
-                  f"Lat={vertex.get('Lat', 'N/A')}°")
-
-    if "ZoneArea" in result1:
-        print(f"\nZone area: {result1['ZoneArea']} km²")
-
-    if "CenterPoint" in result1:
-        center = result1["CenterPoint"]
-        print(f"Zone center: Lon={center.get('Lon', 'N/A')}°, "
-              f"Lat={center.get('Lat', 'N/A')}°")
+    # Parse cartographicDegrees array for Example 1
+    parse_cartographic_degrees(result1)
 
     # Example 2: Landing zone for Chinese rocket over Pacific
     # Launch: Jiuquan, China
@@ -90,105 +119,16 @@ def main():
         ]
     )
 
-    print("\nLanding Zone Results:")
-    if "ZoneVertices" in result2:
-        print("Zone vertices (geographic coordinates):")
-        for i, vertex in enumerate(result2["ZoneVertices"], 1):
-            print(f"  Point {i}: Lon={vertex.get('Lon', 'N/A')}°, "
-                  f"Lat={vertex.get('Lat', 'N/A')}°")
+    # Parse cartographicDegrees array for Example 2
+    parse_cartographic_degrees(result2)
 
-    if "ZoneArea" in result2:
-        print(f"\nZone area: {result2['ZoneArea']} km²")
-
-    # Display full results
+    # Display full API response for reference
     print("\n" + "=" * 70)
     print("Full API Response (Example 1):")
     print("-" * 70)
     import json
     print(json.dumps(result1, indent=2, ensure_ascii=False))
 
-    print("\n" + "=" * 70)
-    print("Full API Response (Example 2):")
-    print("-" * 70)
-    print(json.dumps(result2, indent=2, ensure_ascii=False))
-
-    print("\n" + "=" * 70)
-    print("Use Cases:")
-    print("- Range safety analysis for launch operations")
-    print("- First stage recovery planning")
-    print("- Debris impact zone calculations")
-    print("- Landing ellipse definition for mission planning")
-    print("- Maritime exclusion zone notifications")
-
-
 if __name__ == "__main__":
     main()
 
-"""
->>> Computing landing zone parameters...
->>> ======================================================================
->>>
->>> Example 1: Atlantic Ocean Splashdown Zone
->>> ----------------------------------------------------------------------
->>>
->>> Landing Zone Results:
->>>
->>> ======================================================================
->>>
->>> Example 2: Pacific Ocean Landing Zone
->>> ----------------------------------------------------------------------
->>>
->>> Landing Zone Results:
->>>
->>> ======================================================================
->>> Full API Response (Example 1):
->>> ----------------------------------------------------------------------
->>> {
->>>   "IsSuccess": true,
->>>   "Message": "Success",
->>>   "cartographicDegrees": [
->>>     -74.95408892336079,
->>>     27.770377240284482,
->>>     2.9376450603820508,
->>>     -74.94579563458493,
->>>     27.814890149464613,
->>>     2.934315810957404,
->>>     -75.04593597550145,
->>>     27.82960736703625,
->>>     2.9376366623127814,
->>>     -75.05418958059404,
->>>     27.785088556808244,
->>>     2.9343200310388626
->>>   ]
->>> }
->>>
->>> ======================================================================
->>> Full API Response (Example 2):
->>> ----------------------------------------------------------------------
->>> {
->>>   "IsSuccess": true,
->>>   "Message": "Success",
->>>   "cartographicDegrees": [
->>>     170.0407285167013,
->>>     9.907333744586538,
->>>     10.026475177487681,
->>>     170.09922252920617,
->>>     9.976693761649592,
->>>     9.976040715909658,
->>>     169.95924839842903,
->>>     10.09266075439474,
->>>     10.026438043195027,
->>>     169.90076333780814,
->>>     10.023276624963254,
->>>     9.976031427167037
->>>   ]
->>> }
->>>
->>> ======================================================================
->>> Use Cases:
->>> - Range safety analysis for launch operations
->>> - First stage recovery planning
->>> - Debris impact zone calculations
->>> - Landing ellipse definition for mission planning
->>> - Maritime exclusion zone notifications
-"""

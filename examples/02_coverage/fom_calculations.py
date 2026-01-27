@@ -112,14 +112,14 @@ def demo_simple_coverage():
         step=120.0,  # 2-minute steps
     )
 
-    if result.get("IsSuccess"):
+    if result["IsSuccess"]:
         print(f"✓ Computation successful")
-        print(f"  Minimum coverage: {result.get('Minimum', 0)}")
-        print(f"  Maximum coverage: {result.get('Maximum', 0)}")
-        print(f"  Mean coverage: {result.get('Mean', 0):.4f}")
-        print(f"  Std deviation: {result.get('StdDev', 0):.4f}")
+        print(f"  Minimum coverage: {result['Minimum']}")
+        print(f"  Maximum coverage: {result['Maximum']}")
+        print(f"  Mean coverage: {result['Mean']:.4f}")
+        print(f"  Std deviation: {result['StdDev']:.4f}")
     else:
-        print(f"✗ Error: {result.get('Message', 'Unknown')}")
+        print(f"✗ Error: {result['Message']}")
 
     # Example 2: Grid point at specific time
     specific_time = "2024-01-01T03:00:00.000Z"
@@ -135,8 +135,8 @@ def demo_simple_coverage():
         step=120.0,
     )
 
-    if result.get("IsSuccess"):
-        values = result.get("FOMValues", [])
+    if result["IsSuccess"]:
+        values = result["FOMValues"]
         covered = sum(1 for v in values if v > 0)
         total = len(values)
         coverage_pct = (covered / total * 100) if total > 0 else 0
@@ -146,7 +146,7 @@ def demo_simple_coverage():
         print(f"  Covered points at {specific_time}: {covered}")
         print(f"  Instantaneous coverage: {coverage_pct:.2f}%")
     else:
-        print(f"✗ Error: {result.get('Message', 'Unknown')}")
+        print(f"✗ Error: {result['Message']}")
 
 
 def demo_coverage_time():
@@ -178,11 +178,11 @@ def demo_coverage_time():
         step=120.0,
     )
 
-    if result.get("IsSuccess"):
+    if result["IsSuccess"]:
         total_seconds = 24 * 3600  # 24 hours in seconds
-        min_time = result.get("Minimum", 0)
-        max_time = result.get("Maximum", 0)
-        mean_time = result.get("Mean", 0)
+        min_time = result["Minimum"]
+        max_time = result["Maximum"]
+        mean_time = result["Mean"]
 
         print(f"✓ Computation successful")
         print(f"  Analysis period: 24 hours ({total_seconds} seconds)")
@@ -191,7 +191,7 @@ def demo_coverage_time():
         print(f"  Mean coverage time: {mean_time:.1f} s ({mean_time / 3600:.2f} hrs)")
         print(f"  Mean coverage percentage: {(mean_time / total_seconds * 100):.2f}%")
     else:
-        print(f"✗ Error: {result.get('Message', 'Unknown')}")
+        print(f"✗ Error: {result['Message']}")
 
 
 def demo_number_of_assets():
@@ -224,8 +224,8 @@ def demo_number_of_assets():
         step=120.0,
     )
 
-    if result.get("IsSuccess"):
-        stats_array = result.get("StatsArray", [])
+    if result["IsSuccess"]:
+        stats_array = result["StatsArray"]
         print(f"✓ Computation successful")
         print(f"  Time points sampled: {len(stats_array)}")
 
@@ -235,14 +235,14 @@ def demo_number_of_assets():
             for idx in sample_indices:
                 if 0 <= idx < len(stats_array):
                     stat = stats_array[idx]
-                    time = stat.get("Time", "N/A")
-                    max_sats = stat.get("Maximum", 0)
-                    mean_sats = stat.get("Mean", 0)
+                    time = stat["Time"]
+                    max_sats = stat["Maximum"]
+                    mean_sats = stat["Mean"]
                     print(f"\n  Time: {time}")
                     print(f"    Max simultaneous satellites: {max_sats}")
                     print(f"    Mean simultaneous satellites: {mean_sats:.2f}")
     else:
-        print(f"✗ Error: {result.get('Message', 'Unknown')}")
+        print(f"✗ Error: {result['Message']}")
 
 
 def demo_response_time():
@@ -274,10 +274,10 @@ def demo_response_time():
         step=120.0,
     )
 
-    if result.get("IsSuccess"):
-        min_response = result.get("Minimum", 0)
-        max_response = result.get("Maximum", 0)
-        mean_response = result.get("Mean", 0)
+    if result["IsSuccess"]:
+        min_response = result["Minimum"]
+        max_response = result["Maximum"]
+        mean_response = result["Mean"]
 
         print(f"✓ Computation successful")
         print(f"  Minimum response time: {min_response:.1f} s ({min_response / 60:.2f} min)")
@@ -288,7 +288,7 @@ def demo_response_time():
         )
         print(f"                  from analysis start until first satellite coverage.")
     else:
-        print(f"✗ Error: {result.get('Message', 'Unknown')}")
+        print(f"✗ Error: {result['Message']}")
 
 
 def demo_revisit_time():
@@ -320,10 +320,10 @@ def demo_revisit_time():
         step=120.0,
     )
 
-    if result.get("IsSuccess"):
-        min_revisit = result.get("Minimum", 0)
-        max_revisit = result.get("Maximum", 0)
-        mean_revisit = result.get("Mean", 0)
+    if result["IsSuccess"]:
+        min_revisit = result["Minimum"]
+        max_revisit = result["Maximum"]
+        mean_revisit = result["Mean"]
 
         print(f"✓ Computation successful")
         print(
@@ -340,7 +340,7 @@ def demo_revisit_time():
         )
         print(f"                  between consecutive satellite passes.")
     else:
-        print(f"✗ Error: {result.get('Message', 'Unknown')}")
+        print(f"✗ Error: {result['Message']}")
 
 
 def demo_comparison():
@@ -376,8 +376,8 @@ def demo_comparison():
         output="grid_stats",
         step=120.0,
     )
-    if r.get("IsSuccess"):
-        results["Simple Coverage (mean)"] = f"{r.get('Mean', 0):.3f}"
+    if r["IsSuccess"]:
+        results["Simple Coverage (mean)"] = f"{r['Mean']:.3f}"
 
     # Coverage time
     r = fom_coverage_time(
@@ -388,8 +388,8 @@ def demo_comparison():
         output="grid_stats",
         step=120.0,
     )
-    if r.get("IsSuccess"):
-        results["Coverage Time (mean hrs)"] = f"{r.get('Mean', 0) / 3600:.2f}"
+    if r["IsSuccess"]:
+        results["Coverage Time (mean hrs)"] = f"{r['Mean'] / 3600:.2f}"
 
     # Number of assets
     r = fom_number_of_assets(
@@ -400,8 +400,8 @@ def demo_comparison():
         output="grid_stats",
         step=120.0,
     )
-    if r.get("IsSuccess"):
-        results["Avg Satellites (mean)"] = f"{r.get('Mean', 0):.2f}"
+    if r["IsSuccess"]:
+        results["Avg Satellites (mean)"] = f"{r['Mean']:.2f}"
 
     # Response time
     r = fom_response_time(
@@ -412,8 +412,8 @@ def demo_comparison():
         output="grid_stats",
         step=120.0,
     )
-    if r.get("IsSuccess"):
-        results["Response Time (mean min)"] = f"{r.get('Mean', 0) / 60:.1f}"
+    if r["IsSuccess"]:
+        results["Response Time (mean min)"] = f"{r['Mean'] / 60:.1f}"
 
     # Revisit time
     r = fom_revisit_time(
@@ -424,8 +424,8 @@ def demo_comparison():
         output="grid_stats",
         step=120.0,
     )
-    if r.get("IsSuccess"):
-        results["Revisit Time (mean min)"] = f"{r.get('Mean', 0) / 60:.1f}"
+    if r["IsSuccess"]:
+        results["Revisit Time (mean min)"] = f"{r['Mean'] / 60:.1f}"
 
     # Display comparison table
     print("\n--- FOM Summary ---")
@@ -461,42 +461,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-"""
-Example output (with HTTP 500 server error):
->>> ======================================================================
->>> ASTROX FIGURE OF MERIT (FOM) EXAMPLES
->>> ======================================================================
->>>
->>> Demonstrating 5 FOM functions:
->>>   1. fom_simple_coverage() - Binary coverage indicator
->>>   2. fom_coverage_time() - Total coverage duration
->>>   3. fom_number_of_assets() - Simultaneous satellite count
->>>   4. fom_response_time() - Time to first coverage
->>>   5. fom_revisit_time() - Gap between passes
->>>
->>> ======================================================================
->>> 1. SIMPLE COVERAGE FOM - Binary Coverage Indicator
->>> ======================================================================
->>>
->>> Returns 1 if grid point is covered, 0 otherwise.
->>>
->>> Constellation: 6 satellites (3x2 Walker)
->>>
->>> --- Output: grid_stats (summary) ---
->>> Traceback (most recent call last):
->>>   File "examples/02_coverage/fom_calculations.py", line 463, in <module>
->>>     main()
->>>   File "examples/02_coverage/fom_calculations.py", line 450, in main
->>>     demo_simple_coverage()
->>>   File "examples/02_coverage/fom_calculations.py", line 105, in demo_simple_coverage
->>>     result = fom_simple_coverage(...)
->>>   File "/home/betelgeuse/Developments/astrox-client/astrox/coverage.py", line 283, in fom_simple_coverage
->>>     return sess.post(endpoint=endpoint, data=payload)
->>>   File "/home/betelgeuse/Developments/astrox-client/astrox/_http.py", line 284, in post
->>>     result = _make_request(...)
->>>   File "/home/betelgeuse/Developments/astrox-client/astrox/_http.py", line 108, in _make_request
->>>     raise last_exception
->>> astrox.exceptions.AstroxHTTPError: HTTP 500: Internal Server Error
-"""

@@ -18,7 +18,7 @@ from astrox.propagator import (
     propagate_j2_batch,
     propagate_sgp4_batch
 )
-from astrox._models import KeplerElementsWithEpoch
+from astrox.models import KeplerElementsWithEpoch
 
 
 def example_two_body_batch():
@@ -59,18 +59,15 @@ def example_two_body_batch():
         all_satellite_elements=satellites
     )
 
-    print(f"\nSuccess: {result.get('IsSuccess', 'N/A')}")
-
-    if 'AllSatelliteElements' in result:
-        updated_elements = result['AllSatelliteElements']
-        print(f"\nUpdated orbital elements for {len(updated_elements)} satellites:")
-
-        for i, elem in enumerate(updated_elements):
-            print(f"\n  Satellite {i+1}:")
-            print(f"    SMA: {elem.get('SemimajorAxis', 0)/1e6:.3f} km")
-            print(f"    Inc: {elem.get('Inclination', 0):.4f}°")
-            print(f"    RAAN: {elem.get('RightAscensionOfAscendingNode', 0):.4f}°")
-            print(f"    TA: {elem.get('TrueAnomaly', 0):.4f}°")
+    # The API returns 'AllElementsAtEpoch' list with updated orbital elements
+    updated_elements = result['AllElementsAtEpoch']
+    print(f"\nUpdated orbital elements for {len(updated_elements)} satellites:")
+    for i, elem in enumerate(updated_elements):
+        print(f"\n  Satellite {i+1}:")
+        print(f"    SMA: {elem['SemimajorAxis']/1e6:.3f} km")  # should be ~6.928 km
+        print(f"    Inc: {elem['Inclination']:.4f}°")  # should be ~53.0°
+        print(f"    RAAN: {elem['RightAscensionOfAscendingNode']:.4f}°")  # varies by 120° per sat
+        print(f"    TA: {elem['TrueAnomaly']:.4f}°")  # should be ~19.77° after 1 day
 
 
 def example_j2_batch():
@@ -110,18 +107,17 @@ def example_j2_batch():
         all_satellite_elements=satellites
     )
 
-    print(f"\nSuccess: {result.get('IsSuccess', 'N/A')}")
+    print(f"\nSuccess: {result['IsSuccess']}")
+    print(f"Message: {result['Message']}")
+    updated_elements = result['AllElementsAtEpoch']
+    print(f"\nJ2 Perturbation Effects (7 days):")
+    print(f"{'Altitude (km)':<15} {'ΔRAAN (°)':<12} {'ΔArgPeri (°)':<15}")
+    print("-" * 45)
 
-    if 'AllSatelliteElements' in result:
-        updated_elements = result['AllSatelliteElements']
-        print(f"\nJ2 Perturbation Effects (7 days):")
-        print(f"{'Altitude (km)':<15} {'ΔRAAN (°)':<12} {'ΔArgPeri (°)':<15}")
-        print("-" * 45)
-
-        for i, (elem, alt) in enumerate(zip(updated_elements, altitudes)):
-            delta_raan = elem.get('RightAscensionOfAscendingNode', 0) - 0.0
-            delta_w = elem.get('ArgumentOfPeriapsis', 0) - 90.0
-            print(f"{alt/1000:<15.0f} {delta_raan:<12.6f} {delta_w:<15.6f}")
+    for i, (elem, alt) in enumerate(zip(updated_elements, altitudes)):
+        delta_raan = elem['RightAscensionOfAscendingNode'] - 0.0  # should be ~6.9° for 500km
+        delta_w = elem['ArgumentOfPeriapsis'] - 90.0  # should be ~ -24.5° for 500km
+        print(f"{alt/1000:<15.0f} {delta_raan:<12.6f} {delta_w:<15.6f}")
 
 
 def example_sgp4_batch():
@@ -155,21 +151,20 @@ def example_sgp4_batch():
         tles=tle_catalog
     )
 
-    print(f"\nSuccess: {result.get('IsSuccess', 'N/A')}")
+    print(f"\nSuccess: {result['IsSuccess']}")
+    print(f"Message: {result['Message']}")
+    updated_elements = result['AllElementsAtEpoch']
+    satellite_names = ["ISS", "Hubble", "SSO-1", "SSO-2"]
 
-    if 'AllSatelliteElements' in result:
-        updated_elements = result['AllSatelliteElements']
-        satellite_names = ["ISS", "Hubble", "SSO-1", "SSO-2"]
+    print(f"\nUpdated orbital elements:")
+    print(f"{'Satellite':<10} {'SMA (km)':<12} {'Inc (°)':<10} {'Ecc':<12}")
+    print("-" * 50)
 
-        print(f"\nUpdated orbital elements:")
-        print(f"{'Satellite':<10} {'SMA (km)':<12} {'Inc (°)':<10} {'Ecc':<12}")
-        print("-" * 50)
-
-        for name, elem in zip(satellite_names, updated_elements):
-            sma_km = elem.get('SemimajorAxis', 0) / 1000.0
-            inc = elem.get('Inclination', 0)
-            ecc = elem.get('Eccentricity', 0)
-            print(f"{name:<10} {sma_km:<12.2f} {inc:<10.4f} {ecc:<12.6f}")
+    for name, elem in zip(satellite_names, updated_elements):
+        sma_km = elem['SemimajorAxis'] / 1000.0  # should be ~6771 km for ISS
+        inc = elem['Inclination']  # should be ~51.6° for ISS
+        ecc = elem['Eccentricity']  # small value ~0.0002
+        print(f"{name:<10} {sma_km:<12.2f} {inc:<10.4f} {ecc:<12.6f}")
 
 
 def main():
@@ -203,59 +198,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-"""
-Example output:
->>> ======================================================================
->>>  BATCH ORBIT PROPAGATION EXAMPLES
->>> ======================================================================
->>>
->>> Batch propagation allows efficient state updates for multiple
->>> satellites simultaneously. This is essential for:
->>>   - Constellation management
->>>   - Conjunction screening
->>>   - Multi-asset mission planning
->>>
->>> ============================================================
->>> Example 1: Two-Body Batch Propagation (3-satellite constellation)
->>> ============================================================
->>>
->>> Propagating 3 satellites to common epoch...
->>> Initial epoch: 2024-01-01T00:00:00.000Z
->>> Target epoch:  2024-01-02T00:00:00.000Z (1 day later)
->>>
->>> Success: True
->>>
->>> ============================================================
->>> Example 2: J2 Batch Propagation (5-satellite constellation)
->>> ============================================================
->>>
->>> Propagating 5 satellites at different altitudes...
->>> Altitudes: [500.0, 600.0, 700.0, 800.0, 900.0] km
->>> Initial epoch: 2024-01-01T00:00:00.000Z
->>> Target epoch:  2024-01-08T00:00:00.000Z (7 days later)
->>>
->>> Success: True
->>>
->>> ============================================================
->>> Example 3: SGP4 Batch Propagation (4 satellites from TLEs)
->>> ============================================================
->>>
->>> Propagating 4 satellites from TLE catalog...
->>> TLE epoch: 2024-01-01
->>> Target epoch: 2024-01-03T00:00:00.000Z (2 days later)
->>>
->>> Success: True
->>>
->>> ======================================================================
->>> Batch Propagation Summary:
->>> ----------------------------------------------------------------------
->>> Two-Body Batch: Fastest, suitable for short durations
->>> J2 Batch:       Accurate for most Earth satellites
->>> SGP4 Batch:     Standard for TLE catalog processing
->>>
->>> All batch methods propagate to a single common epoch,
->>> enabling direct comparison and conjunction analysis.
->>> ======================================================================
-"""

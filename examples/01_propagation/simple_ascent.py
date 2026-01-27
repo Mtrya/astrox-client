@@ -56,45 +56,43 @@ def main():
     print("=" * 60)
     print("Simple Ascent Trajectory Results")
     print("=" * 60)
-    print(f"Success: {result.get('IsSuccess', 'N/A')}")
-    print(f"Message: {result.get('Message', 'N/A')}")
+    print(f"Success: {result['IsSuccess']}")
+    print(f"Message: {result['Message']}")
 
-    if 'CzmlPositions' in result:
-        positions = result['CzmlPositions']
-        num_points = len(positions) // 3
-        print(f"\nGenerated {num_points} position points")
-        print(f"Step size: 1 second")
-        print(f"Ascent duration: 8 minutes (480 seconds)")
+    # The API returns position data inside 'Position' dict with 'cartesianVelocity'
+    # which contains flattened [x, y, z, x, y, z, ...] array
+    positions = result['Position']['cartesianVelocity']
+    num_points = len(positions) // 3
+    print(f"\nGenerated {num_points} position points")  # should be 481 points for 480s at 1s steps
+    print(f"Step size: 1 second")
+    print(f"Ascent duration: 8 minutes (480 seconds)")
+    # Analyze trajectory phases
+    earth_radius = 6378137.0
 
-        # Analyze trajectory phases
-        earth_radius = 6378137.0
+    # Sample altitudes at key times
+    sample_times = [0, 60, 120, 240, 360, 479]  # seconds
+    print(f"\nAltitude profile:")
 
-        # Sample altitudes at key times
-        sample_times = [0, 60, 120, 240, 360, 479]  # seconds
-        print(f"\nAltitude profile:")
+    for t in sample_times:
+        idx = t * 3
+        x, y, z = positions[idx:idx+3]
+        r = (x**2 + y**2 + z**2) ** 0.5
+        altitude_km = (r - earth_radius) / 1000.0
+        velocity = "liftoff" if t == 0 else f"~{burnout_velocity * t/480:.0f} m/s"
+        print(f"  T+{t:3d}s: {altitude_km:6.1f} km  ({velocity})")
 
-        for t in sample_times:
-            if t < num_points:
-                idx = t * 3
-                if idx + 2 < len(positions):
-                    x, y, z = positions[idx:idx+3]
-                    r = (x**2 + y**2 + z**2) ** 0.5
-                    altitude_km = (r - earth_radius) / 1000.0
-                    velocity = "liftoff" if t == 0 else f"~{burnout_velocity * t/480:.0f} m/s"
-                    print(f"  T+{t:3d}s: {altitude_km:6.1f} km  ({velocity})")
+    # Calculate downrange distance
+    import math
+    dlat = abs(burnout_lat - launch_lat) * math.pi / 180
+    dlon = abs(burnout_lon - launch_lon) * math.pi / 180
+    mean_lat = (launch_lat + burnout_lat) / 2 * math.pi / 180
 
-        # Calculate downrange distance
-        import math
-        dlat = abs(burnout_lat - launch_lat) * math.pi / 180
-        dlon = abs(burnout_lon - launch_lon) * math.pi / 180
-        mean_lat = (launch_lat + burnout_lat) / 2 * math.pi / 180
+    downrange_km = earth_radius * math.sqrt(
+        dlat**2 + (dlon * math.cos(mean_lat))**2
+    ) / 1000.0
 
-        downrange_km = earth_radius * math.sqrt(
-            dlat**2 + (dlon * math.cos(mean_lat))**2
-        ) / 1000.0
-
-        print(f"\nDownrange distance: {downrange_km:.1f} km")
-        print(f"Average ascent rate: {burnout_altitude/480:.1f} m/s vertical")
+    print(f"\nDownrange distance: {downrange_km:.1f} km")
+    print(f"Average ascent rate: {burnout_altitude/480:.1f} m/s vertical")
 
     print("\n" + "=" * 60)
     print("Simple Ascent Model:")
@@ -110,32 +108,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-"""
-Example output:
->>> Computing launch ascent trajectory...
->>> Launch site: Jiuquan (40.9575°N, 100.2912°E)
->>> Launch altitude: 1000.0 m
->>> Burnout conditions:
->>>   Velocity: 7800.0 m/s
->>>   Altitude: 200 km
->>>   Position: (42.50°N, 105.00°E)
->>>
->>> ============================================================
->>> Simple Ascent Trajectory Results
->>> ============================================================
->>> Success: True
->>> Message: Success
->>>
->>> ============================================================
->>> Simple Ascent Model:
->>>   - Linear interpolation between launch and burnout states
->>>   - Suitable for preliminary mission design
->>>   - Does not model staging or detailed aerodynamics
->>>   - Fast computation for trade studies
->>>
->>> For detailed launch analysis, use the full rocket
->>> trajectory optimization in the rocket module.
->>> ============================================================
-"""

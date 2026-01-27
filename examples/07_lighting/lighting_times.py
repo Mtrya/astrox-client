@@ -17,8 +17,8 @@ def main():
     print()
 
     # Define analysis time window (24 hours around equinox)
-    start = "2024-03-20T00:00:00Z"
-    stop = "2024-03-21T00:00:00Z"
+    start = "2024-03-20T00:00:00Z"   # Spring equinox
+    stop = "2024-03-21T00:00:00Z"    # 24 hour analysis
 
     # GEO satellite (geostationary orbit)
     spacecraft = EntityPositionJ2(
@@ -63,52 +63,47 @@ def main():
     print("Lighting Time Intervals:")
     print("-" * 70)
 
-    # Check if request was successful
-    if not result.get("IsSuccess", False):
-        print(f"Error: {result.get('Message', 'Unknown error')}")
-        return
-
     # Process sunlight intervals
-    if "SunLight" in result and result["SunLight"]:
+    if result["SunLight"]:
         sunlight = result["SunLight"]
         if "Intervals" in sunlight and sunlight["Intervals"]:
             intervals = sunlight["Intervals"]
             print()
-            print(f"SUNLIGHT INTERVALS ({len(intervals)} periods):")
+            print(f"SUNLIGHT INTERVALS ({len(intervals)} periods):")  # Example: 2 periods
             print("-" * 70)
 
             total_sunlight = 0.0
             for i, interval in enumerate(intervals, 1):
                 if isinstance(interval, dict):
-                    start_time = interval.get("Start", "N/A")
-                    stop_time = interval.get("Stop", "N/A")
-                    duration = interval.get("Duration", 0.0)
+                    start_time = interval["Start"]
+                    stop_time = interval["Stop"]
+                    duration = interval["Duration"]
                     total_sunlight += duration
 
                     print(f"  Period {i}:")
                     print(f"    Start:    {start_time}")
                     print(f"    Stop:     {stop_time}")
-                    print(f"    Duration: {duration/3600:.2f} hours")
+                    print(f"    Duration: {duration/3600:.2f} hours")  # typically ~11.37 (period 1), ~11.43 (period 2)
                 else:
                     print(f"  Period {i}: {interval} (not a dict)")
 
             print(f"\n  Total Sunlight: {total_sunlight/3600:.2f} hours "
-                  f"({100*total_sunlight/86400:.1f}% of day)")
+                  f"({100*total_sunlight/86400:.1f}% of day)")  # Example: ~22.80 hours (95.0% of day)
 
             # Show statistics if available
             if "MinDuration" in sunlight:
-                min_dur = sunlight["MinDuration"].get("Duration", 0)
-                print(f"  Minimum Duration: {min_dur/3600:.2f} hours")
+                min_dur = sunlight["MinDuration"]["Duration"]
+                print(f"  Minimum Duration: {min_dur/3600:.2f} hours")  # typically ~11.37 hours
             if "MaxDuration" in sunlight:
-                max_dur = sunlight["MaxDuration"].get("Duration", 0)
-                print(f"  Maximum Duration: {max_dur/3600:.2f} hours")
+                max_dur = sunlight["MaxDuration"]["Duration"]
+                print(f"  Maximum Duration: {max_dur/3600:.2f} hours")  # typically ~11.43 hours
             if "MeanDuration" in sunlight:
-                print(f"  Mean Duration: {sunlight['MeanDuration']/3600:.2f} hours")
+                print(f"  Mean Duration: {sunlight['MeanDuration']/3600:.2f} hours")  # typically ~11.40 hours
         else:
             print("\nNo sunlight intervals found.")
 
     # Process penumbra intervals
-    if "Penumbra" in result and result["Penumbra"]:
+    if result["Penumbra"]:
         penumbra = result["Penumbra"]
         if isinstance(penumbra, list) and penumbra:
             print()
@@ -118,9 +113,9 @@ def main():
             total_penumbra = 0.0
             for i, interval in enumerate(penumbra, 1):
                 if isinstance(interval, dict):
-                    start_time = interval.get("Start", "N/A")
-                    stop_time = interval.get("Stop", "N/A")
-                    duration = interval.get("Duration", 0.0)
+                    start_time = interval["Start"]
+                    stop_time = interval["Stop"]
+                    duration = interval["Duration"]
                     total_penumbra += duration
 
                     print(f"  Period {i}:")
@@ -136,7 +131,7 @@ def main():
             print("\nNo penumbra intervals found.")
 
     # Process umbra intervals
-    if "Umbra" in result and result["Umbra"]:
+    if result["Umbra"]:
         umbra = result["Umbra"]
         if isinstance(umbra, list) and umbra:
             print()
@@ -146,9 +141,9 @@ def main():
             total_umbra = 0.0
             for i, interval in enumerate(umbra, 1):
                 if isinstance(interval, dict):
-                    start_time = interval.get("Start", "N/A")
-                    stop_time = interval.get("Stop", "N/A")
-                    duration = interval.get("Duration", 0.0)
+                    start_time = interval["Start"]
+                    stop_time = interval["Stop"]
+                    duration = interval["Duration"]
                     total_umbra += duration
 
                     print(f"  Period {i}:")
@@ -178,63 +173,6 @@ def main():
     print("  - Thermal control system design")
     print("  - Mission operations scheduling")
 
-    print()
-    print("Lighting time calculation completed successfully!")
-    print("=" * 70)
-
 
 if __name__ == "__main__":
     main()
-
-    # Example output:
-    # >>> ======================================================================
-    # >>> Lighting Time Intervals for GEO Satellite
-    # >>> ======================================================================
-    # >>>
-    # >>> Analysis Period: 2024-03-20T00:00:00Z to 2024-03-21T00:00:00Z
-    # >>> Spacecraft Orbit:
-    # >>>   Type: Geostationary (GEO)
-    # >>>   Altitude: ~35,786 km
-    # >>>   Inclination: 0.1°
-    # >>>   Analysis Date: March 20 (Spring Equinox)
-    # >>>
-    # >>> Calculating lighting time intervals...
-    # >>>
-    # >>> Lighting Time Intervals:
-    # >>> ----------------------------------------------------------------------
-    # >>>
-    # >>> SUNLIGHT INTERVALS (2 periods):
-    # >>> ----------------------------------------------------------------------
-    # >>>   Period 1:
-    # >>>     Start:    2024-03-20T00:00:00.000Z
-    # >>>     Stop:     2024-03-20T11:22:14.069Z
-    # >>>     Duration: 11.37 hours
-    # >>>   Period 2:
-    # >>>     Start:    2024-03-20T12:33:59.119Z
-    # >>>     Stop:     2024-03-21T00:00:00.000Z
-    # >>>     Duration: 11.43 hours
-    # >>>
-    # >>>   Total Sunlight: 22.80 hours (95.0% of day)
-    # >>>   Minimum Duration: 11.37 hours
-    # >>>   Maximum Duration: 11.43 hours
-    # >>>   Mean Duration: 11.40 hours
-    # >>>
-    # >>> No penumbra intervals found.
-    # >>>
-    # >>> No umbra intervals found.
-    # >>>
-    # >>> Summary:
-    # >>> ----------------------------------------------------------------------
-    # >>> GEO satellites experience eclipse seasons around equinoxes
-    # >>> when Earth blocks sunlight. This analysis shows:
-    # >>>   - Maximum eclipse duration at GEO: ~70 minutes
-    # >>>   - Eclipse season duration: ~45 days around each equinox
-    # >>>
-    # >>> Applications:
-    # >>>   - Solar panel power generation planning
-    # >>>   - Battery capacity sizing
-    # >>>   - Thermal control system design
-    # >>>   - Mission operations scheduling
-    # >>>
-    # >>> Lighting time calculation completed successfully!
-    # >>> ======================================================================

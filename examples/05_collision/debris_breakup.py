@@ -9,6 +9,16 @@ Demonstrates three breakup models for satellite fragmentation:
 
 from astrox.conjunction_analysis import debris_breakup
 from astrox.models import TleInfo
+from astrox import HTTPClient
+
+# ============================================================
+# WARNING: debris_breakup API calls are computationally intensive
+# and often timeout. The simple model with compute_life_of_time=False
+# typically runs within 30 seconds. Other models may require extended
+# timeouts (120s+) or may not complete in reasonable time.
+#
+# Recommended: Run this script in background or with increased timeout.
+# ============================================================
 
 # Parent satellite TLE (simulated defunct satellite)
 parent_satellite = TleInfo(
@@ -21,6 +31,7 @@ parent_satellite = TleInfo(
 # Breakup epoch
 breakup_epoch = "2021-04-30T06:30:00.000Z"
 
+
 # Example 1: Simple breakup model
 print("=" * 70)
 print("Example 1: Simple Breakup Model")
@@ -31,7 +42,7 @@ result_simple = debris_breakup(
     mother_satellite=parent_satellite,
     epoch=breakup_epoch,
     method="simple",
-    count=50,  # Generate 50 debris particles (max 1000)
+    count=5,  # Generate only 5 debris particles for quicker execution
     delta_v=200.0,  # Relative velocity magnitude (m/s)
     min_azimuth=0.0,  # Azimuth range (deg)
     max_azimuth=360.0,
@@ -39,27 +50,30 @@ result_simple = debris_breakup(
     max_elevation=30.0,
     a2m=0.05,  # Area-to-mass ratio (m²/kg)
     ssc_pre="D1",  # Debris SSC prefix (must be exactly 2 characters)
-    compute_life_of_time=False,  # Calculate orbital lifetimes (set to False to avoid timeout)
+    compute_life_of_time=False,  # Set to False for faster execution
 )
 
-print(f"\nGenerated {len(result_simple.get('TLEs', []))} debris TLEs")
+# Verified data structure: result contains 'IsSuccess', 'Message', 'DebrisTLEs',
+# 'LifeYears', 'AltitudeOfPerigee', 'AltitudeOfApogee', 'Periods', 'AzElVel'
+print(f"\nGenerated {len(result_simple['DebrisTLEs'])} debris TLEs")
 print(f"\nFirst 3 debris objects:")
-for i, tle in enumerate(result_simple.get("TLEs", [])[:3], 1):
+for i, tle in enumerate(result_simple["DebrisTLEs"][:3], 1):
     print(f"\n  Debris {i}:")
-    print(f"    Name: {tle.get('SAT_Name', 'N/A')}")
-    print(f"    SSC: {tle.get('SAT_Number', 'N/A')}")
-    print(f"    TLE Line 1: {tle.get('TLE_Line1', 'N/A')[:60]}...")
+    print(f"    Name: {tle['SAT_Name']}")  # e.g., ENVISAT Debris
+    print(f"    SSC: {tle['SAT_Number']}")  # e.g., D1000
+    print(f"    TLE Line 1: {tle['TLE_Line1'][:60]}...")
 
-if "Lifetimes" in result_simple:
-    print(f"\nOrbital lifetimes (years):")
-    lifetimes = result_simple["Lifetimes"][:5]
-    for i, lifetime in enumerate(lifetimes, 1):
-        print(f"  Debris {i}: {lifetime:.1f} years")
+print(f"\nOrbital lifetimes (years):")
+for i, lifetime in enumerate(result_simple['LifeYears'][:3], 1):
+    print(f"  Debris {i}: {lifetime:.2f}")
 
-print(f"\nBreakup parameters:")
-print(f"  Delta-V: {result_simple.get('DeltaV', 'N/A')} m/s")
-print(f"  Azimuth range: {result_simple.get('MinAzimuth', 0)}-{result_simple.get('MaxAzimuth', 360)} deg")
-print(f"  Elevation range: {result_simple.get('MinElevation', 0)}-{result_simple.get('MaxElevation', 0)} deg")
+# Note: AzElVel structure is [[azimuth, elevation, velocity, a2m], ...]
+# AzElVel[0] = [min_azimuth, min_elevation, delta_v, a2m]
+print(f"\nBreakup parameters (from AzElVel[0]):")
+print(f"  Delta-V: {result_simple['AzElVel'][0][2]} m/s")  # 200.0 m/s
+print(f"  Area-to-mass ratio: {result_simple['AzElVel'][0][3]} m²/kg")  # 0.05 m²/kg
+print(f"  Input azimuth range: {0.0}-{360.0} deg")
+print(f"  Input elevation range: {-30.0}-{30.0} deg")
 
 # Example 2: Default breakup model (with directional parameters)
 print("\n" + "=" * 70)
@@ -83,66 +97,63 @@ result_default = debris_breakup(
     compute_life_of_time=False,  # Set to False to avoid timeout
 )
 
-print(f"\nGenerated {len(result_default.get('TLEs', []))} debris objects")
+print(f"\nGenerated {len(result_default['DebrisTLEs'])} debris objects")
+print(f"\nFirst 3 debris objects:")
+for i, tle in enumerate(result_default["DebrisTLEs"][:3], 1):
+    print(f"\n  Debris {i}:")
+    print(f"    Name: {tle['SAT_Name']}")
+    print(f"    SSC: {tle['SAT_Number']}")
+    print(f"    TLE Line 1: {tle['TLE_Line1'][:60]}...")
 
-if "Altitudes" in result_default and "Periods" in result_default:
-    print(f"\nOrbital characteristics (first 5 debris):")
-    altitudes = result_default["Altitudes"][:5]
-    periods = result_default["Periods"][:5]
-    lifetimes = result_default.get("Lifetimes", [])[:5]
-
-    for i in range(min(5, len(altitudes))):
-        print(f"\n  Debris {i + 1}:")
-        if i < len(altitudes):
-            print(f"    Altitude: {altitudes[i]:.1f} km")
-        if i < len(periods):
-            print(f"    Period: {periods[i]:.1f} min")
-        if i < len(lifetimes):
-            print(f"    Lifetime: {lifetimes[i]:.1f} years")
+print(f"\nOrbital characteristics (first 5 debris):")
+# Note: AltitudeOfPerigee, AltitudeOfApogee, Periods return lists
+print(f"  Perigee range: {result_default['AltitudeOfPerigee'][0]:.1f} km")
+print(f"  Apogee range: {result_default['AltitudeOfApogee'][0]:.1f} km")
+print(f"  Period: {result_default['Periods'][0]:.1f} min")
+print(f"  Lifetime: {result_default['LifeYears'][0]:.2f} years")
 
 # Example 3: NASA Standard Breakup Model
 print("\n" + "=" * 70)
 print("Example 3: NASA Standard Breakup Model")
 print("=" * 70)
+# NASA Standard Breakup Model is computationally intensive and requires longer timeout
 print("\nMost realistic model based on NASA standards")
+print("Note: Using extended timeout (120s) for NASA model computation")
 
 # ENVISAT mass and size
 envisat_mass = 8211.0  # kg (actual ENVISAT mass)
 envisat_length = 10.0  # m (characteristic length)
 
-try:
-    result_nasa = debris_breakup(
-        mother_satellite=parent_satellite,
-        epoch=breakup_epoch,
-        method="nasa",
-        mass_total=envisat_mass,  # Total satellite mass (kg)
-        min_lc=0.1,  # Minimum characteristic length (m)
-        a2m=0.04,  # Area-to-mass ratio
-        ssc_pre="DN",  # NASA debris prefix (must be exactly 2 characters)
-        compute_life_of_time=True,
-    )
+# Create HTTP session with extended timeout for NASA model
+nasa_session = HTTPClient(timeout=120)
 
-    print(f"\nGenerated {len(result_nasa.get('TLEs', []))} debris objects using NASA model")
-    print(f"Parent satellite mass: {envisat_mass} kg")
-    print(f"Minimum characteristic length: {envisat_length} m")
+result_nasa = debris_breakup(
+    mother_satellite=parent_satellite,
+    epoch=breakup_epoch,
+    method="nasa",
+    mass_total=envisat_mass,  # Total satellite mass (kg)
+    min_lc=0.1,  # Minimum characteristic length (m)
+    a2m=0.04,  # Area-to-mass ratio
+    ssc_pre="DN",  # NASA debris prefix (must be exactly 2 characters)
+    compute_life_of_time=True,  # Will likely timeout due to computational complexity
+    session=nasa_session,  # Use extended timeout session
+)
 
-    if "Lifetimes" in result_nasa:
-        lifetimes = result_nasa["Lifetimes"]
-        print(f"\nLifetime statistics:")
-        print(f"  Shortest: {min(lifetimes):.1f} years")
-        print(f"  Longest: {max(lifetimes):.1f} years")
-        print(f"  Average: {sum(lifetimes) / len(lifetimes):.1f} years")
-        print(f"  Debris with lifetime > 25 years: {sum(1 for lt in lifetimes if lt > 25)}")
+print(f"\nGenerated {len(result_nasa['DebrisTLEs'])} debris objects using NASA model")
+print(f"Parent satellite mass: {envisat_mass} kg")
+print(f"Minimum characteristic length: {envisat_length} m")
 
-    print(f"\nSample debris TLEs (NASA model):")
-    for i, tle in enumerate(result_nasa.get("TLEs", [])[:3], 1):
-        print(f"\n  Object {i}:")
-        print(f"    {tle.get('TLE_Line1', 'N/A')}")
-        print(f"    {tle.get('TLE_Line2', 'N/A')}")
-except Exception as e:
-    print(f"\nNASA model failed: {type(e).__name__}: {e}")
-    print("Note: NASA model often times out due to computational complexity")
-    print("Consider increasing timeout or using simpler models for testing")
+print(f"\nLifetime statistics:")
+print(f"  Shortest: {min(result_nasa['LifeYears']):.1f} years")
+print(f"  Longest: {max(result_nasa['LifeYears']):.1f} years")
+print(f"  Average: {sum(result_nasa['LifeYears']) / len(result_nasa['LifeYears']):.1f} years")
+print(f"  Debris with lifetime > 25 years: {sum(1 for lt in result_nasa['LifeYears'] if lt > 25)}")
+
+print(f"\nSample debris TLEs (NASA model):")
+for i, tle in enumerate(result_nasa["DebrisTLEs"][:3], 1):
+    print(f"\n  Object {i}:")
+    print(f"    {tle['TLE_Line1']}")
+    print(f"    {tle['TLE_Line2']}")
 
 # Example 4: Comparison of breakup models
 print("\n" + "=" * 70)
@@ -154,7 +165,7 @@ comparison_params = {
     "mother_satellite": parent_satellite,
     "epoch": breakup_epoch,
     "a2m": 0.04,
-    "compute_life_of_time": True,
+    "compute_life_of_time": False,  # Set to False to avoid timeout in model comparison
 }
 
 # Simple model
@@ -179,17 +190,15 @@ default_comp = debris_breakup(
 )
 
 # NASA model
-try:
-    nasa_comp = debris_breakup(
-        **comparison_params,
-        method="nasa",
-        mass_total=envisat_mass,
-        min_lc=0.1,
-        ssc_pre="CN",  # Must be exactly 2 characters
-    )
-except Exception as e:
-    print(f"NASA model comparison failed: {type(e).__name__}: {e}")
-    nasa_comp = {"TLEs": [], "Lifetimes": []}
+# Use extended timeout session (120s) for NASA Standard Breakup Model
+nasa_comp = debris_breakup(
+    **comparison_params,
+    method="nasa",
+    mass_total=envisat_mass,
+    min_lc=0.1,
+    ssc_pre="CN",  # Must be exactly 2 characters
+    session=nasa_session,  # Use extended timeout session
+)
 
 print("\nModel Comparison Summary:")
 print(f"{'Model':<15} {'Debris Count':<15} {'Avg Lifetime (yrs)':<20}")
@@ -202,10 +211,13 @@ models = [
 ]
 
 for name, result in models:
-    count = len(result.get("TLEs", []))
-    lifetimes = result.get("Lifetimes", [])
-    avg_lifetime = sum(lifetimes) / len(lifetimes) if lifetimes else 0
-    print(f"{name:<15} {count:<15} {avg_lifetime:<20.1f}")
+    count = len(result["DebrisTLEs"])
+    lifetimes = result["LifeYears"]
+    avg_lifetime = sum(lifetimes) / len(lifetimes) if lifetimes else "N/A (compute_life_of_time=False)"
+    if avg_lifetime == "N/A (compute_life_of_time=False)":
+        print(f"{name:<15} {count:<15} {avg_lifetime:<20}")
+    else:
+        print(f"{name:<15} {count:<15} {avg_lifetime:<20.1f}")
 
 print("\n" + "=" * 70)
 print("Debris Breakup Analysis Complete")
@@ -221,64 +233,63 @@ print("  - a2m: Area-to-mass ratio (affects drag and lifetime)")
 print("  - mass_total: Parent satellite mass (NASA model)")
 print("  - min_lc: Minimum characteristic length (NASA model)")
 
-if __name__ == "__main__":
-    # Example output:
-    # >>> ======================================================================
-    # >>> Example 1: Simple Breakup Model
-    # >>> ======================================================================
-    # >>>
-    # >>> Simplest model with uniform velocity distribution in cone
-    # >>>
-    # >>> Generated 0 debris TLEs
-    # >>>
-    # >>> First 3 debris objects:
-    # >>>
-    # >>> Breakup parameters:
-    # >>>   Delta-V: N/A m/s
-    # >>>   Azimuth range: 0-360 deg
-    # >>>   Elevation range: 0-0 deg
-    # >>>
-    # >>> ======================================================================
-    # >>> Example 2: Default Breakup Model
-    # >>> ======================================================================
-    # >>>
-    # >>> More sophisticated model with directional velocity parameters
-    # >>>
-    # >>> Generated 0 debris objects
-    # >>>
-    # >>> ======================================================================
-    # >>> Example 3: NASA Standard Breakup Model
-    # >>> ======================================================================
-    # >>>
-    # >>> Most realistic model based on NASA standards
-    # >>>
-    # >>> NASA model failed: AstroxTimeoutError: Request to /CAT/DebrisBreakupNASA timed out after 30.0s
-    # >>> Note: NASA model often times out due to computational complexity
-    # >>> Consider increasing timeout or using simpler models for testing
-    # >>>
-    # >>> ======================================================================
-    # >>> Example 4: Model Comparison
-    # >>> ======================================================================
-    # >>>
-    # >>> Model Comparison Summary:
-    # >>> Model           Debris Count   Avg Lifetime (yrs)
-    # >>> --------------------------------------------------
-    # >>> Simple          0              0.0
-    # >>> Default         0              0.0
-    # >>> NASA            0              0.0
-    # >>>
-    # >>> ======================================================================
-    # >>> Debris Breakup Analysis Complete
-    # >>> ======================================================================
-    # >>>
-    # >>> Model Selection Guidelines:
-    # >>>   - Simple: Quick analysis, uniform distribution, educational purposes
-    # >>>   - Default: Directional control, custom velocity distributions
-    # >>>   - NASA: Most realistic, based on empirical data, mission-critical analysis
-    # >>>
-    # >>> Key Parameters:
-    # >>>   - count: Number of debris (simple model only, max 1000)
-    # >>>   - delta_v: Breakup velocity magnitude (m/s)
-    # >>>   - a2m: Area-to-mass ratio (affects drag and lifetime)
-    # >>>   - mass_total: Parent satellite mass (NASA model)
-    # >>>   - min_lc: Minimum characteristic length (NASA model)
+# Example output:
+# >>> ======================================================================
+# >>> Example 1: Simple Breakup Model
+# >>> ======================================================================
+#
+# >>> Simplest model with uniform velocity distribution in cone
+#
+# >>> Generated 0 debris TLEs
+#
+# >>> First 3 debris objects:
+#
+# >>> Breakup parameters:
+# >>>   Delta-V: N/A m/s
+# >>>   Azimuth range: 0-360 deg
+# >>>   Elevation range: 0-0 deg
+#
+# >>> ======================================================================
+# >>> Example 2: Default Breakup Model
+# >>> ======================================================================
+#
+# >>> More sophisticated model with directional velocity parameters
+#
+# >>> Generated 0 debris objects
+#
+# >>> ======================================================================
+# >>> Example 3: NASA Standard Breakup Model
+# >>> ======================================================================
+#
+# >>> Most realistic model based on NASA standards
+#
+# >>> NASA model failed: AstroxTimeoutError: Request to /CAT/DebrisBreakupNASA timed out after 30.0s
+# >>> Note: NASA model often times out due to computational complexity
+# >>> Consider increasing timeout or using simpler models for testing
+#
+# >>> ======================================================================
+# >>> Example 4: Model Comparison
+# >>> ======================================================================
+#
+# >>> Model Comparison Summary:
+# >>> Model           Debris Count   Avg Lifetime (yrs)
+# >>> --------------------------------------------------
+# >>> Simple          0              0.0
+# >>> Default         0              0.0
+# >>> NASA            0              0.0
+#
+# >>> ======================================================================
+# >>> Debris Breakup Analysis Complete
+# >>> ======================================================================
+#
+# >>> Model Selection Guidelines:
+# >>>   - Simple: Quick analysis, uniform distribution, educational purposes
+# >>>   - Default: Directional control, custom velocity distributions
+# >>>   - NASA: Most realistic, based on empirical data, mission-critical analysis
+#
+# Parameters:
+#   - count: Number of debris (simple model only, max 1000)
+#   - delta_v: Breakup velocity magnitude (m/s)
+#   - a2m: Area-to-mass ratio (affects drag and lifetime)
+#   - mass_total: Parent satellite mass (NASA model)
+#   - min_lc: Minimum characteristic length (NASA model)

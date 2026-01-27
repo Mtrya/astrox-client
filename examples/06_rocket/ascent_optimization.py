@@ -3,17 +3,22 @@ Rocket Ascent Trajectory Optimization
 
 Demonstrates optimization of multi-stage rocket ascent trajectories to reach
 target orbits using the flight segment model.
+
+STATUS: All three rocket endpoints (ascent, descent, guidance) currently
+experience server-side errors or timeouts. The ascent optimization endpoint
+times out after 30 seconds, indicating the computation may be too complex
+for the current server configuration or the endpoint is not fully implemented.
 """
 
 from astrox.rocket import optimize_trajectory
-# Note: RocketSegmentInfo is not available in public models.py
-# This is a known issue - the model needs to be aliased in models.py
-from astrox._models import RocketSegmentInfo
+from astrox.models import RocketSegmentInfo
 
 # Example 1: Two-stage rocket to LEO
 print("=" * 70)
 print("Example 1: Two-Stage Rocket to LEO (800 km)")
 print("=" * 70)
+print("NOTE: This endpoint times out after 30s - server-side computation issue")
+print()
 
 # Define rocket segments (CZ-2D-like configuration)
 stage1_segments = [
@@ -68,21 +73,21 @@ result_leo = optimize_trajectory(
     a0=185.0,  # Launch azimuth (deg) for sun-synchronous orbit
 )
 
-print("\nOptimization Results:")
-print(f"Mission: {result_leo.get('Name', 'N/A')}")
-print(f"Rocket Type: {result_leo.get('RocketType', 'N/A')}")
-print(f"Launch Site: {result_leo.get('LaunchSite', 'N/A')}")
+print("\nOptimization Results:")  # Expected: Mission: CZ-2D SSO Mission
+print(f"Mission: {result_leo['Name']}")  # Raises KeyError if field missing
+print(f"Rocket Type: {result_leo['RocketType']}")  # Expected: CZ2D
+print(f"Launch Site: {result_leo['LaunchSite']}")  # Expected: Jiuquan
 print(f"Payload: {1500.0} kg")
-print(f"\nTarget Orbit:")
-print(f"  Altitude: 800 km")
-print(f"  Inclination: 98.2° (SSO)")
-print(f"  Eccentricity: 0.001")
+print(f"\nTarget Orbit:")  # Expected: 800 km altitude
+print(f"  Altitude: 800 km")  # Expected: 800 km circular orbit
+print(f"  Inclination: 98.2° (SSO)")  # Expected: Sun-synchronous inclination
+print(f"  Eccentricity: 0.001")  # Expected: Nearly circular
 print(f"\nTrajectory Summary:")
-if "FlightSegments" in result_leo:
-    for i, seg in enumerate(result_leo["FlightSegments"], 1):
-        print(f"  Segment {i}: {seg.get('Name', 'N/A')} - {seg.get('Duration', 'N/A')}s")
+for i, seg in enumerate(result_leo["FlightSegments"], 1):
+    print(f"  Segment {i}: {seg['Name']} - {seg['Duration']}s")
 
 # Example 2: Three-stage rocket to GTO
+# Target: 185 km x 35786 km (GTO)
 print("\n" + "=" * 70)
 print("Example 2: Three-Stage Rocket to GTO")
 print("=" * 70)
@@ -150,7 +155,7 @@ print("\nGTO Mission Results:")
 print(f"Payload: {5500.0} kg")
 print(f"Target Orbit: 185 km x 35786 km (GTO)")
 print(f"Inclination: 28.5°")
-print(f"Launch Site: Xichang (low latitude advantage)")
+print(f"Launch Site: Xichang (low latitude advantage)")  # Expected: Xichang Satellite Launch Center
 
 # Example 3: Small launcher to LEO
 print("\n" + "=" * 70)
@@ -216,8 +221,8 @@ result_small = optimize_trajectory(
 
 print("\nSmall Launcher Results:")
 print(f"Payload: {300.0} kg")
-print(f"Target: 500 km LEO")
-print(f"Three solid stages")
+print(f"Target: 500 km LEO")  # Expected: 500 km circular orbit
+print(f"Three solid stages")  # Expected: Three-stage solid rocket motor
 
 # Example 4: Optimization with different launch azimuths
 print("\n" + "=" * 70)
@@ -276,6 +281,10 @@ for direction, azimuth, target_inc in azimuths:
 print("\n" + "=" * 70)
 print("Ascent Trajectory Optimization Complete")
 print("=" * 70)
+print("\nNOTE: Rocket endpoints currently have server-side issues:")
+print("  - Ascent optimization: Times out after 30s (JSON decode error)")
+print("  - Descent optimization: 'Object reference not set to an instance' error")
+print("  - Guidance calculation: Requires undocumented mandatory parameters")
 print("\nKey Parameters:")
 print("  - gw: Payload mass (kg)")
 print("  - t1: Gravity turn initiation time (s)")
@@ -284,92 +293,13 @@ print("  - natmos: Number of atmospheric flight segments")
 print("  - sma0, ecc0, inc0, omg0: Target orbital elements")
 print("  - a0: Launch azimuth (deg)")
 print("\nRocket Segment Parameters:")
-print("  - Fx: Total axial thrust (N)")
-print("  - Ips: Specific impulse (m/s)")
-print("  - Gj: Jettisoned mass at stage end (kg)")
-print("  - Dt: Burn duration (s)")
-print("  - Sm: Aerodynamic area (m²)")
-print("  - Sa: Engine nozzle area (m²)")
-print("  - Psicx: Yaw angle (deg or 'Follow')")
-print("  - Phicx_dot: Pitch rate (deg/s)")
+print("  - Fx: Total axial thrust (N)")  # Expected: Stage thrust in Newtons
+print("  - Ips: Specific impulse (m/s)")  # Expected: Engine efficiency
+print("  - Gj: Jettisoned mass at stage end (kg)")  # Expected: Dry mass of stage
+print("  - Dt: Burn duration (s)")  # Expected: Stage burn time
+print("  - Sm: Aerodynamic area (m²)")  # Expected: Cross-sectional area
+print("  - Sa: Engine nozzle area (m²)")  # Expected: Nozzle exit area
+print("  - Psicx: Yaw angle (deg or 'Follow')")  # Expected: Yaw steering
+print("  - Phicx_dot: Pitch rate (deg/s)")  # Expected: Pitch steering rate
 print("\nSupported Rocket Types:")
 print("  CZ2C, CZ2D, CZ3A, CZ3B, CZ3C, CZ4B, CZ4C, CZ7A, KZ1A")
-
-if __name__ == "__main__":
-    # Note: This example currently fails with a malformed JSON response from the API
-    # The server returns invalid JSON that cannot be parsed
-    # Error: JSONDecodeError: Expecting ',' delimiter: line 1575413 column 27 (char 36509292)
-    # This is a server-side issue that needs to be fixed
-    pass
-    # Example output would be shown here if the API worked correctly
-    # >>> ======================================================================
-    # >>> Example 1: Two-Stage Rocket to LEO (800 km)
-    # >>> ======================================================================
-    # >>>
-    # >>> Optimization Results:
-    # >>> Mission: CZ-2D SSO Mission
-    # >>> Rocket Type: CZ2D
-    # >>> Launch Site: Jiuquan
-    # >>> Payload: 1500.0 kg
-    # >>>
-    # >>> Target Orbit:
-    # >>>   Altitude: 800 km
-    # >>>   Inclination: 98.2° (SSO)
-    # >>>   Eccentricity: 0.001
-    # >>>
-    # >>> Trajectory Summary:
-    # >>>   Segment 1: 一级起飞 - 145.0s
-    # >>>   Segment 2: 二级起飞 - 180.0s
-    # >>>
-    # >>> ======================================================================
-    # >>> Example 2: Three-Stage Rocket to GTO
-    # >>> ======================================================================
-    # >>>
-    # >>> GTO Mission Results:
-    # >>> Payload: 5500.0 kg
-    # >>> Target Orbit: 185 km x 35786 km (GTO)
-    # >>> Inclination: 28.5°
-    # >>> Launch Site: Xichang (low latitude advantage)
-    # >>>
-    # >>> ======================================================================
-    # >>> Example 3: Small Launcher (KZ-1A to LEO)
-    # >>> ======================================================================
-    # >>>
-    # >>> Small Launcher Results:
-    # >>> Payload: 300.0 kg
-    # >>> Target: 500 km LEO
-    # >>> Three solid stages
-    # >>>
-    # >>> ======================================================================
-    # >>> Example 4: Launch Azimuth Optimization
-    # >>> ======================================================================
-    # >>>
-    # >>> Comparing launch azimuths from Jiuquan:
-    # >>>   Northerly: Azimuth 185.0° → Inclination 98.0°
-    # >>>   Easterly: Azimuth 95.0° → Inclination 42.0°
-    # >>>   Polar: Azimuth 180.0° → Inclination 100.0°
-    # >>>
-    # >>> ======================================================================
-    # >>> Ascent Trajectory Optimization Complete
-    # >>> ======================================================================
-    # >>>
-    # >>> Key Parameters:
-    # >>>   - gw: Payload mass (kg)
-    # >>>   - t1: Gravity turn initiation time (s)
-    # >>>   - alpham: Maximum angle of attack limit (deg)
-    # >>>   - natmos: Number of atmospheric flight segments
-    # >>>   - sma0, ecc0, inc0, omg0: Target orbital elements
-    # >>>   - a0: Launch azimuth (deg)
-    # >>>
-    # >>> Rocket Segment Parameters:
-    # >>>   - Fx: Total axial thrust (N)
-    # >>>   - Ips: Specific impulse (m/s)
-    # >>>   - Gj: Jettisoned mass at stage end (kg)
-    # >>>   - Dt: Burn duration (s)
-    # >>>   - Sm: Aerodynamic area (m²)
-    # >>>   - Sa: Engine nozzle area (m²)
-    # >>>   - Psicx: Yaw angle (deg or 'Follow')
-    # >>>   - Phicx_dot: Pitch rate (deg/s)
-    # >>>
-    # >>> Supported Rocket Types:
-    # >>>   CZ2C, CZ2D, CZ3A, CZ3B, CZ3C, CZ4B, CZ4C, CZ7A, KZ1A

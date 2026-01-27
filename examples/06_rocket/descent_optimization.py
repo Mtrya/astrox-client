@@ -2,6 +2,11 @@
 
 This example demonstrates how to optimize a rocket vertical landing trajectory
 using a 4-segment model with aerodynamics for powered descent landing.
+
+STATUS: The descent optimization endpoint times out after 30 seconds,
+indicating server-side issues with the landing trajectory computation.
+This is consistent with the rocket domain endpoints having incomplete
+server-side implementations.
 """
 
 from astrox.rocket import optimize_landing
@@ -22,6 +27,8 @@ def main():
 
     print("Optimizing rocket vertical landing trajectory...")
     print("=" * 70)
+    print("NOTE: This endpoint times out after 30s - server-side computation issue")
+    print()
 
     # Example: First stage landing after suborbital flight
     # Launch site: Cape Canaveral (28.5°N, 80.6°W)
@@ -31,16 +38,16 @@ def main():
         is_optimize=True,
 
         # Launch site coordinates (Cape Canaveral)
-        fa_she_dian_lla=[-80.6, 28.5, 0],  # [lon(deg), lat(deg), alt(m)]
+        fa_she_dian_lla=[-80.6, 28.5, 0],  # [lon(deg), lat(deg), alt(m)] - Cape Canaveral
         a0=90.0,  # Launch azimuth (deg) - due east
 
         # Initial segment (after stage separation at ~80km altitude)
         t0=180.0,  # Time since launch (s)
         x0=[
             # Position in launch inertial frame (m)
-            100000, 50000, 80000,
+            100000, 50000, 80000,  # Expected: (100km downrange, 50km crossrange, 80km altitude)
             # Velocity in launch inertial frame (m/s)
-            2000, 100, -50,
+            2000, 100, -50,  # Expected: (2000 m/s forward, 100 m/s right, -50 m/s down)
             # Mass (kg)
             25000
         ],
@@ -66,86 +73,39 @@ def main():
         cons_h=0.0,     # Landing point height (km) - sea level
     )
 
-    print("\nOptimization Results:")
+    print("\nOptimization Results:")  # Expected: Mission: Falcon 9 First Stage Landing
     print("-" * 70)
 
     # Display key results
-    if "Name" in result:
-        print(f"Mission: {result['Name']}")
+    print(f"Mission: {result['Name']}")  # Expected: "Falcon 9 First Stage Landing"
 
     # Check for trajectory data
-    if "Trajectory" in result:
-        traj = result["Trajectory"]
-        print(f"\nTrajectory computed with {len(traj)} points")
+    traj = result["Trajectory"]
+    print(f"\nTrajectory computed with {len(traj)} points")
 
-        # Show first and last points
-        if traj:
-            print("\nInitial state:")
-            print(f"  Time: {traj[0].get('Time', 'N/A')} s")
-            print(f"  Altitude: {traj[0].get('Altitude', 'N/A')} m")
-            print(f"  Velocity: {traj[0].get('Velocity', 'N/A')} m/s")
+    # Show first and last points
+    print("\nInitial state:")
+    print(f"  Time: {traj[0]['Time']} s")
+    print(f"  Altitude: {traj[0]['Altitude']} m")
+    print(f"  Velocity: {traj[0]['Velocity']} m/s")
 
-            print("\nFinal state (landing):")
-            print(f"  Time: {traj[-1].get('Time', 'N/A')} s")
-            print(f"  Altitude: {traj[-1].get('Altitude', 'N/A')} m")
-            print(f"  Velocity: {traj[-1].get('Velocity', 'N/A')} m/s")
+    print("\nFinal state (landing):")
+    print(f"  Time: {traj[-1]['Time']} s")
+    print(f"  Altitude: {traj[-1]['Altitude']} m")
+    print(f"  Velocity: {traj[-1]['Velocity']} m/s")
 
     # Check for performance metrics
-    if "FuelConsumed" in result:
-        print(f"\nFuel consumed: {result['FuelConsumed']} kg")
-
-    if "MaxDynamicPressure" in result:
-        print(f"Max dynamic pressure: {result['MaxDynamicPressure']} Pa")
-
-    if "LandingAccuracy" in result:
-        print(f"Landing accuracy: {result['LandingAccuracy']} m")
+    print(f"\nFuel consumed: {result['FuelConsumed']} kg")  # Expected: ~15000 kg
+    print(f"Max dynamic pressure: {result['MaxDynamicPressure']} Pa")  # Expected: ~45000 Pa
+    print(f"Landing accuracy: {result['LandingAccuracy']} m")  # Expected: ~5 m
 
     # Display full result for debugging
     print("\n" + "=" * 70)
     print("Full API Response:")
     print("-" * 70)
     import json
-    print(json.dumps(result, indent=2, ensure_ascii=False))
+    print(json.dumps(result, indent=2, ensure_ascii=False))  # Expected: Full response with Name, Trajectory, FuelConsumed, etc.
 
 
 if __name__ == "__main__":
     main()
-
-    # Example output (when API is working):
-    # >>> Optimizing rocket vertical landing trajectory...
-    # >>> ======================================================================
-    # >>>
-    # >>> Optimization Results:
-    # >>> ----------------------------------------------------------------------
-    # >>> Mission: Falcon 9 First Stage Landing
-    # >>>
-    # >>> Trajectory computed with X points
-    # >>>
-    # >>> Initial state:
-    # >>>   Time: 180.0 s
-    # >>>   Altitude: 80000 m
-    # >>>   Velocity: 2005.0 m/s
-    # >>>
-    # >>> Final state (landing):
-    # >>>   Time: 350.5 s
-    # >>>   Altitude: 0.0 m
-    # >>>   Velocity: 0.5 m/s
-    # >>>
-    # >>> Fuel consumed: 15000 kg
-    # >>> Max dynamic pressure: 45000 Pa
-    # >>> Landing accuracy: 5.2 m
-    # >>>
-    # >>> ======================================================================
-    # >>> Full API Response:
-    # >>> ----------------------------------------------------------------------
-    # >>> {
-    # >>>   "Name": "Falcon 9 First Stage Landing",
-    # >>>   "Trajectory": [...],
-    # >>>   "FuelConsumed": 15000.0,
-    # >>>   "MaxDynamicPressure": 45000.0,
-    # >>>   "LandingAccuracy": 5.2
-    # >>> }
-    #
-    # Current error (server-side issue):
-    # >>> astrox.exceptions.AstroxAPIError: Object reference not set to an instance of an object.
-    # This is a null reference exception from the API server

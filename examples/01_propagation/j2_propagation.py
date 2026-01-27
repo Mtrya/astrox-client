@@ -50,24 +50,24 @@ def main():
     print("=" * 60)
     print("J2 Propagation Results (Sun-Synchronous Orbit)")
     print("=" * 60)
-    print(f"Success: {result.get('IsSuccess', 'N/A')}")
-    print(f"Message: {result.get('Message', 'N/A')}")
+    print(f"Success: {result['IsSuccess']}")
+    print(f"Message: {result['Message']}")
 
-    if 'CzmlPositions' in result:
-        positions = result['CzmlPositions']
-        num_points = len(positions) // 3  # Each point is [x, y, z]
-        print(f"\nGenerated {num_points} position points")
-        print(f"Step size: 300 seconds (5 minutes)")
-        print(f"Duration: 7 days")
+    # Access position data from 'Position' dict's 'cartesianVelocity' field
+    positions = result['Position']['cartesianVelocity']
+    num_points = len(positions) // 3  # Each point is [x, y, z]
+    print(f"\nGenerated {num_points} position points")  # should be 2016 points for 7 days at 300s steps
+    print(f"Step size: 300 seconds (5 minutes)")
+    print(f"Duration: 7 days")
 
-        # Calculate orbital period (approximate)
-        mu = 3.986004418e14  # Earth's gravitational parameter (m³/s²)
-        period = 2 * 3.14159 * (semi_major_axis ** 1.5) / (mu ** 0.5)
-        orbits_per_day = 86400 / period
+    # Calculate orbital period (approximate)
+    mu = 3.986004418e14  # Earth's gravitational parameter (m³/s²)
+    period = 2 * 3.14159 * (semi_major_axis ** 1.5) / (mu ** 0.5)
+    orbits_per_day = 86400 / period
 
-        print(f"\nOrbital period: {period:.1f} seconds ({period/60:.1f} minutes)")
-        print(f"Orbits per day: {orbits_per_day:.2f}")
-        print(f"Total orbits in 7 days: {orbits_per_day * 7:.1f}")
+    print(f"\nOrbital period: {period:.1f} seconds ({period/60:.1f} minutes)")
+    print(f"Orbits per day: {orbits_per_day:.2f}")
+    print(f"Total orbits in 7 days: {orbits_per_day * 7:.1f}")
 
     print("\n" + "=" * 60)
     print("J2 Effects on SSO:")
@@ -79,23 +79,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-"""
-Example output:
->>> Propagating sun-synchronous orbit with J2 perturbations...
->>> This will take a moment as we're computing 7 days...
->>>
->>> ============================================================
->>> J2 Propagation Results (Sun-Synchronous Orbit)
->>> ============================================================
->>> Success: True
->>> Message: Success
->>>
->>> ============================================================
->>> J2 Effects on SSO:
->>> - The orbit plane precesses at ~0.986°/day
->>> - This keeps the satellite in sync with the sun
->>> - Essential for consistent lighting in imaging missions
->>> ============================================================
-"""

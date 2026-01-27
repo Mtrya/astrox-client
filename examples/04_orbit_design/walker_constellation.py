@@ -60,8 +60,20 @@ def main():
     print(f"  Altitude: ~20,200 km")
     print(f"  Inclination: 55.0°")
     print(f"  Eccentricity: 0.0 (circular)")
-    print(f"\nResult keys: {list(result.keys())}")
-    print(f"Full result:\n{result}")
+    print(f"\nConstellation data structure:")
+    # API returns a dict with 'IsSuccess', 'Message', and 'WalkerSatellites' keys
+    # 'WalkerSatellites' contains a 2D list [plane][satellite] of Kepler element dicts
+    print(f"  Result keys: {list(result.keys())}")
+    constellation = result['WalkerSatellites']
+    print(f"  Number of planes: {len(constellation)}")  # Expected: 6 for GPS-like
+    print(f"  Satellites in plane 0: {len(constellation[0])} satellites")  # Expected: 4 per plane
+    print(f"\nSample Kepler elements for plane 0, satellite 0:")
+    print(f"  Semimajor axis: {constellation[0][0]['SemimajorAxis']:.3f} m")  # Expected: ~2.7e7 m for MEO
+    print(f"  Eccentricity: {constellation[0][0]['Eccentricity']}")          # Expected: ~0 (circular)
+    print(f"  Inclination: {constellation[0][0]['Inclination']:.6f}°")      # Expected: 55° for GPS
+    print(f"  RAAN: {constellation[0][0]['RightAscensionOfAscendingNode']:.6f}°")
+    print(f"  Argument of periapsis: {constellation[0][0]['ArgumentOfPeriapsis']:.6f}°")
+    print(f"  True anomaly: {constellation[0][0]['TrueAnomaly']:.6f}°")
 
     # Example 2: Smaller LEO constellation (18:3:1 Delta pattern)
     print("\n" + "=" * 80)
@@ -87,16 +99,22 @@ def main():
         inter_plane_phase_increment=1,  # Phase factor F=1
     )
 
-    print(f"\nWalker Constellation: 18:3:1")
+    
+    print(f"\nWalker Constellation: 18:3:1 (LEO)")
     print(f"  Total satellites: 18")
     print(f"  Number of planes: 3")
     print(f"  Satellites per plane: 6")
     print(f"  Pattern: Delta")
     print(f"  Phase factor: 1")
-    print(f"\nSeed orbit:")
-    print(f"  Altitude: 1000 km")
-    print(f"  Inclination: 87.0° (near-polar)")
-    print(f"\nFull result:\n{result}")
+    print(f"\nKepler elements for plane 0, satellite 0:")
+    constellation = result['WalkerSatellites']
+    print(f"  Semimajor axis: {constellation[0][0]['SemimajorAxis']:.3f} m")  # Expected: ~7.4e6 m for 1000 km LEO
+    print(f"  Eccentricity: {constellation[0][0]['Eccentricity']}")          # Expected: 0
+    print(f"  Inclination: {constellation[0][0]['Inclination']:.6f}°")      # Expected: 87° near-polar
+    print(f"  RAAN: {constellation[0][0]['RightAscensionOfAscendingNode']:.6f}°")
+    print(f"  Argument of periapsis: {constellation[0][0]['ArgumentOfPeriapsis']:.6f}°")
+    print(f"  True anomaly: {constellation[0][0]['TrueAnomaly']:.6f}°")
+
 
     # Example 3: Polar constellation (12:4:1 Delta pattern)
     print("\n" + "=" * 80)
@@ -131,7 +149,14 @@ def main():
     print(f"\nSeed orbit:")
     print(f"  Altitude: 600 km")
     print(f"  Inclination: 90.0° (polar)")
-    print(f"\nFull result:\n{result}")
+    print(f"\nKepler elements for plane 0, satellite 0:")
+    constellation = result['WalkerSatellites']
+    print(f"  Semimajor axis: {constellation[0][0]['SemimajorAxis']:.3f} m")  # Expected: ~6.978e6 m for 600 km LEO
+    print(f"  Eccentricity: {constellation[0][0]['Eccentricity']}")          # Expected: 0
+    print(f"  Inclination: {constellation[0][0]['Inclination']:.6f}°")      # Expected: 90° (polar)
+    print(f"  RAAN: {constellation[0][0]['RightAscensionOfAscendingNode']:.6f}°")
+    print(f"  Argument of periapsis: {constellation[0][0]['ArgumentOfPeriapsis']:.6f}°")
+    print(f"  True anomaly: {constellation[0][0]['TrueAnomaly']:.6f}°")
 
     # Example 4: Custom constellation with manual spacing
     print("\n" + "=" * 80)
@@ -168,7 +193,14 @@ def main():
     print(f"\nSeed orbit:")
     print(f"  Altitude: 10,000 km")
     print(f"  Inclination: 60.0°")
-    print(f"\nFull result:\n{result}")
+    print(f"\nKepler elements for plane 0, satellite 0:")
+    constellation = result['WalkerSatellites']
+    print(f"  Semimajor axis: {constellation[0][0]['SemimajorAxis']:.3f} m")  # Expected: ~1.638e7 m for 10,000 km MEO
+    print(f"  Eccentricity: {constellation[0][0]['Eccentricity']}")          # Expected: 0
+    print(f"  Inclination: {constellation[0][0]['Inclination']:.6f}°")      # Expected: 60° (seed orbit)
+    print(f"  RAAN: {constellation[0][0]['RightAscensionOfAscendingNode']:.6f}°")
+    print(f"  Argument of periapsis: {constellation[0][0]['ArgumentOfPeriapsis']:.6f}°")
+    print(f"  True anomaly: {constellation[0][0]['TrueAnomaly']:.6f}°")
 
     # Example 5: Star pattern constellation
     print("\n" + "=" * 80)
@@ -203,7 +235,14 @@ def main():
     print(f"\nSeed orbit:")
     print(f"  Altitude: 800 km")
     print(f"  Inclination: 75.0°")
-    print(f"\nFull result:\n{result}")
+    print(f"\nKepler elements for plane 0, satellite 0:")
+    constellation = result['WalkerSatellites']
+    print(f"  Semimajor axis: {constellation[0][0]['SemimajorAxis']:.3f} m")  # Expected: ~7.178e6 m for 800 km LEO
+    print(f"  Eccentricity: {constellation[0][0]['Eccentricity']}")          # Expected: 0
+    print(f"  Inclination: {constellation[0][0]['Inclination']:.6f}°")      # Expected: 75° (seed orbit)
+    print(f"  RAAN: {constellation[0][0]['RightAscensionOfAscendingNode']:.6f}°")
+    print(f"  Argument of periapsis: {constellation[0][0]['ArgumentOfPeriapsis']:.6f}°")
+    print(f"  True anomaly: {constellation[0][0]['TrueAnomaly']:.6f}°")
 
     print("\n" + "=" * 80)
     print("Notes on Walker Constellations:")
@@ -217,118 +256,9 @@ def main():
     print("    For 6 planes: valid F values are 1, 2, 3, 4, 5")
     print("  - RAAN spacing: Planes equally distributed around equator")
     print("  - True anomaly: Satellites equally spaced within each plane")
+    print("  - API returns 2D list of Kepler element dicts per satellite")
     print("=" * 80)
 
 
 if __name__ == "__main__":
     main()
-
-
-"""
->>> ================================================================================
->>> Example 1: GPS-like Walker Delta Constellation (24:6:1)
->>> ================================================================================
->>>
->>> Walker Constellation: 24:6:1 (GPS-like)
->>>   Total satellites: 24
->>>   Number of planes: 6
->>>   Satellites per plane: 4
->>>   Pattern: Delta
->>>   Phase factor: 1
->>>
->>> Seed orbit:
->>>   Altitude: ~20,200 km
->>>   Inclination: 55.0°
->>>   Eccentricity: 0.0 (circular)
->>>
->>> Result keys: ['IsSuccess', 'Message', 'WalkerSatellites']
->>> Full result:
->>> {'IsSuccess': True, 'Message': 'Success!', 'WalkerSatellites': [[{'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 0, 'TrueAnomaly': 0, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 0, 'TrueAnomaly': 90, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 0, 'TrueAnomaly': 180, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 0, 'TrueAnomaly': 270, 'GravitationalParameter': 398600441800000}], [{'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 60, 'TrueAnomaly': 15, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 60, 'TrueAnomaly': 105, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 60, 'TrueAnomaly': 195, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 60, 'TrueAnomaly': 285, 'GravitationalParameter': 398600441800000}], [{'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 120, 'TrueAnomaly': 30, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 120, 'TrueAnomaly': 120, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 120, 'TrueAnomaly': 210, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 120, 'TrueAnomaly': 300, 'GravitationalParameter': 398600441800000}], [{'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 180, 'TrueAnomaly': 45, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 180, 'TrueAnomaly': 135, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 180, 'TrueAnomaly': 225, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 180, 'TrueAnomaly': 315, 'GravitationalParameter': 398600441800000}], [{'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 240, 'TrueAnomaly': 60, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 240, 'TrueAnomaly': 150, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 240, 'TrueAnomaly': 240, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 240, 'TrueAnomaly': 330, 'GravitationalParameter': 398600441800000}], [{'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 300, 'TrueAnomaly': 75, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 300, 'TrueAnomaly': 165, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 300, 'TrueAnomaly': 255, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 26560000, 'Eccentricity': 0, 'Inclination': 55, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 300, 'TrueAnomaly': 345, 'GravitationalParameter': 398600441800000}]]}
->>>
->>> ================================================================================
->>> Example 2: LEO Walker Delta Constellation (18:3:1)
->>> ================================================================================
->>>
->>> Walker Constellation: 18:3:1
->>>   Total satellites: 18
->>>   Number of planes: 3
->>>   Satellites per plane: 6
->>>   Pattern: Delta
->>>   Phase factor: 1
->>>
->>> Seed orbit:
->>>   Altitude: 1000 km
->>>   Inclination: 87.0° (near-polar)
->>>
->>> Full result:
->>> {'IsSuccess': True, 'Message': 'Success!', 'WalkerSatellites': [[{'SemimajorAxis': 7378000, 'Eccentricity': 0, 'Inclination': 87, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 0, 'TrueAnomaly': 0, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 7378000, 'Eccentricity': 0, 'Inclination': 87, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 0, 'TrueAnomaly': 60, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 7378000, 'Eccentricity': 0, 'Inclination': 87, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 0, 'TrueAnomaly': 120, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 7378000, 'Eccentricity': 0, 'Inclination': 87, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 0, 'TrueAnomaly': 180, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 7378000, 'Eccentricity': 0, 'Inclination': 87, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 0, 'TrueAnomaly': 240, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 7378000, 'Eccentricity': 0, 'Inclination': 87, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 0, 'TrueAnomaly': 300, 'GravitationalParameter': 398600441800000}], [{'SemimajorAxis': 7378000, 'Eccentricity': 0, 'Inclination': 87, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 120, 'TrueAnomaly': 20, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 7378000, 'Eccentricity': 0, 'Inclination': 87, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 120, 'TrueAnomaly': 80, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 7378000, 'Eccentricity': 0, 'Inclination': 87, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 120, 'TrueAnomaly': 140, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 7378000, 'Eccentricity': 0, 'Inclination': 87, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 120, 'TrueAnomaly': 200, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 7378000, 'Eccentricity': 0, 'Inclination': 87, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 120, 'TrueAnomaly': 260, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 7378000, 'Eccentricity': 0, 'Inclination': 87, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 120, 'TrueAnomaly': 320, 'GravitationalParameter': 398600441800000}], [{'SemimajorAxis': 7378000, 'Eccentricity': 0, 'Inclination': 87, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 240, 'TrueAnomaly': 40, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 7378000, 'Eccentricity': 0, 'Inclination': 87, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 240, 'TrueAnomaly': 100, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 7378000, 'Eccentricity': 0, 'Inclination': 87, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 240, 'TrueAnomaly': 160, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 7378000, 'Eccentricity': 0, 'Inclination': 87, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 240, 'TrueAnomaly': 220, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 7378000, 'Eccentricity': 0, 'Inclination': 87, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 240, 'TrueAnomaly': 280, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 7378000, 'Eccentricity': 0, 'Inclination': 87, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 240, 'TrueAnomaly': 340, 'GravitationalParameter': 398600441800000}]]}
->>>
->>> ================================================================================
->>> Example 3: Polar Walker Delta Constellation (12:4:1)
->>> ================================================================================
->>>
->>> Walker Constellation: 12:4:1
->>>   Total satellites: 12
->>>   Number of planes: 4
->>>   Satellites per plane: 3
->>>   Pattern: Delta
->>>   Phase factor: 1
->>>
->>> Seed orbit:
->>>   Altitude: 600 km
->>>   Inclination: 90.0° (polar)
->>>
->>> Full result:
->>> {'IsSuccess': True, 'Message': 'Success!', 'WalkerSatellites': [[{'SemimajorAxis': 6978000, 'Eccentricity': 0, 'Inclination': 90, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 0, 'TrueAnomaly': 0, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 6978000, 'Eccentricity': 0, 'Inclination': 90, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 0, 'TrueAnomaly': 120, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 6978000, 'Eccentricity': 0, 'Inclination': 90, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 0, 'TrueAnomaly': 240, 'GravitationalParameter': 398600441800000}], [{'SemimajorAxis': 6978000, 'Eccentricity': 0, 'Inclination': 90, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 90, 'TrueAnomaly': 30, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 6978000, 'Eccentricity': 0, 'Inclination': 90, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 90, 'TrueAnomaly': 150, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 6978000, 'Eccentricity': 0, 'Inclination': 90, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 90, 'TrueAnomaly': 270, 'GravitationalParameter': 398600441800000}], [{'SemimajorAxis': 6978000, 'Eccentricity': 0, 'Inclination': 90, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 180, 'TrueAnomaly': 60, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 6978000, 'Eccentricity': 0, 'Inclination': 90, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 180, 'TrueAnomaly': 180, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 6978000, 'Eccentricity': 0, 'Inclination': 90, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 180, 'TrueAnomaly': 300, 'GravitationalParameter': 398600441800000}], [{'SemimajorAxis': 6978000, 'Eccentricity': 0, 'Inclination': 90, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 270, 'TrueAnomaly': 90, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 6978000, 'Eccentricity': 0, 'Inclination': 90, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 270, 'TrueAnomaly': 210, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 6978000, 'Eccentricity': 0, 'Inclination': 90, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 270, 'TrueAnomaly': 330, 'GravitationalParameter': 398600441800000}]]}
->>>
->>> ================================================================================
->>> Example 4: Custom Walker Constellation (8 satellites)
->>> ================================================================================
->>>
->>> Custom Walker Constellation:
->>>   Total satellites: 8
->>>   Number of planes: 2
->>>   Satellites per plane: 4
->>>   Pattern: Custom
->>>   True anomaly increment: 45.0°
->>>   RAAN increment: 90.0°
->>>
->>> Seed orbit:
->>>   Altitude: 10,000 km
->>>   Inclination: 60.0°
->>>
->>> Full result:
->>> {'IsSuccess': True, 'Message': 'Success!', 'WalkerSatellites': [[{'SemimajorAxis': 16378000, 'Eccentricity': 0, 'Inclination': 60, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 0, 'TrueAnomaly': 0, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 16378000, 'Eccentricity': 0, 'Inclination': 60, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 0, 'TrueAnomaly': 90, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 16378000, 'Eccentricity': 0, 'Inclination': 60, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 0, 'TrueAnomaly': 180, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 16378000, 'Eccentricity': 0, 'Inclination': 60, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 0, 'TrueAnomaly': 270, 'GravitationalParameter': 398600441800000}], [{'SemimajorAxis': 16378000, 'Eccentricity': 0, 'Inclination': 60, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 90, 'TrueAnomaly': 45, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 16378000, 'Eccentricity': 0, 'Inclination': 60, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 90, 'TrueAnomaly': 135, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 16378000, 'Eccentricity': 0, 'Inclination': 60, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 90, 'TrueAnomaly': 225, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 16378000, 'Eccentricity': 0, 'Inclination': 60, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 90, 'TrueAnomaly': 315, 'GravitationalParameter': 398600441800000}]]}
->>>
->>> ================================================================================
->>> Example 5: Walker Star Constellation (9:3:2)
->>> ================================================================================
->>>
->>> Walker Constellation: 9:3:2 (Star)
->>>   Total satellites: 9
->>>   Number of planes: 3
->>>   Satellites per plane: 3
->>>   Pattern: Star
->>>   Phase factor: 2
->>>
->>> Seed orbit:
->>>   Altitude: 800 km
->>>   Inclination: 75.0°
->>>
->>> Full result:
->>> {'IsSuccess': True, 'Message': 'Success!', 'WalkerSatellites': [[{'SemimajorAxis': 7178000, 'Eccentricity': 0, 'Inclination': 75, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 0, 'TrueAnomaly': 0, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 7178000, 'Eccentricity': 0, 'Inclination': 75, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 0, 'TrueAnomaly': 120, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 7178000, 'Eccentricity': 0, 'Inclination': 75, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 0, 'TrueAnomaly': 240, 'GravitationalParameter': 398600441800000}], [{'SemimajorAxis': 7178000, 'Eccentricity': 0, 'Inclination': 75, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 60, 'TrueAnomaly': 80, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 7178000, 'Eccentricity': 0, 'Inclination': 75, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 60, 'TrueAnomaly': 200, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 7178000, 'Eccentricity': 0, 'Inclination': 75, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 60, 'TrueAnomaly': 320, 'GravitationalParameter': 398600441800000}], [{'SemimajorAxis': 7178000, 'Eccentricity': 0, 'Inclination': 75, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 120, 'TrueAnomaly': 160, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 7178000, 'Eccentricity': 0, 'Inclination': 75, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 120, 'TrueAnomaly': 280, 'GravitationalParameter': 398600441800000}, {'SemimajorAxis': 7178000, 'Eccentricity': 0, 'Inclination': 75, 'ArgumentOfPeriapsis': 0, 'RightAscensionOfAscendingNode': 120, 'TrueAnomaly': 40, 'GravitationalParameter': 398600441800000}]]}
->>>
->>> ================================================================================
->>> Notes on Walker Constellations:
->>>   - Delta pattern: Most common, provides uniform coverage
->>>   - Star pattern: Alternative symmetric distribution
->>>   - Custom pattern: Manual control over spacing
->>>   - Phase factor F: Controls relative phasing between planes
->>>     IMPORTANT: F must be in range [1, num_planes-1]
->>>     F cannot be 0 or >= num_planes
->>>     For 4 planes: valid F values are 1, 2, 3
->>>     For 6 planes: valid F values are 1, 2, 3, 4, 5
->>>   - RAAN spacing: Planes equally distributed around equator
->>>   - True anomaly: Satellites equally spaced within each plane
->>> ================================================================================
-"""

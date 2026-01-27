@@ -48,22 +48,22 @@ def main():
     print("=" * 60)
     print("Two-Body Propagation Results (ISS Orbit)")
     print("=" * 60)
-    print(f"Success: {result.get('IsSuccess', 'N/A')}")
-    print(f"Message: {result.get('Message', 'N/A')}")
+    print(f"Success: {result['IsSuccess']}")
+    print(f"Message: {result['Message']}")
 
-    # CZML position data contains time-stamped position vectors
-    if 'CzmlPositions' in result:
-        positions = result['CzmlPositions']
-        print(f"\nGenerated {len(positions)} position points")
-        print(f"Step size: 60 seconds")
-        print(f"Duration: 1 day")
+    # Access position data from 'Position' dict's 'cartesianVelocity' field
+    positions = result['Position']['cartesianVelocity']
+    num_points = len(positions) // 3
+    print(f"\nGenerated {num_points} position points")  # should be 1441 for 1 day at 60s steps
+    print(f"Step size: 60 seconds")
+    print(f"Duration: 1 day")
 
-        # Show first and last positions
-        if positions:
-            print(f"\nFirst position (epoch):")
-            print(f"  {positions[:3]}")  # First 3 values: x, y, z
-            print(f"\nLast position (after 1 day):")
-            print(f"  {positions[-3:]}")  # Last 3 values
+    # Show first and last positions
+    if num_points > 0:
+        print(f"\nFirst position (epoch):")
+        print(f"  {positions[:3]}")  # First 3 values: x, y, z
+        print(f"\nLast position (after 1 day):")
+        print(f"  {positions[-3:]}")  # Last 3 values
 
     print("\n" + "=" * 60)
     print("Note: Two-body propagation ignores perturbations like J2,")
@@ -74,19 +74,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-"""
-Example output:
->>> ============================================================
->>> Two-Body Propagation Results (ISS Orbit)
->>> ============================================================
->>> Success: True
->>> Message: Success
->>>
->>> ============================================================
->>> Note: Two-body propagation ignores perturbations like J2,
->>> atmospheric drag, and solar radiation pressure. For more
->>> accurate results, use J2 or HPOP propagation.
->>> ============================================================
-"""

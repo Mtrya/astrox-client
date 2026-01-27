@@ -4,24 +4,30 @@ Run Mission Control Sequence (MCS) for trajectory design.
 This example demonstrates using the Astrogator MCS to design a
 simple orbit transfer maneuver from LEO to higher orbit using
 impulsive delta-V burns.
+
+Expected output:
+- Segment results displaying delta-V consumption, duration, altitude, velocity
+- Example: starting altitude ~300 km, total delta-V ~850 m/s for both burns
+- Pydantic serializer warnings are expected and can be ignored
+  (due to nested model serialization for discriminated unions)
 """
 
 from astrox.astrogator import run_mcs
 from astrox._models import (
-    AgVAState,
-    IAgVAElementAgVAElementCartesian,
-    AgVAMCSSegmentAgVAMCSInitialState,
-)
-from astrox.models import (
-    ApoapsisStop,
-    Cartesian,
-    DurationStop,
-    ImpulsiveAttitude,
-    ImpulsiveManeuver,
-    ImpulsiveManeuverSegment,
-    InitialStateSegment,
-    PeriapsisStop,
-    PropagateSegment,
+    Cartesian,  # Simple Cartesian coordinate model (x, y, z, vx, vy, vz)
+    AgVAState,  # State vector with epoch and orbit elements
+    AgVAMCSSegmentAgVAMCSInitialState,  # Initial state segment (discriminated union)
+    AgVAMCSSegmentAgVAMCSPropagate,  # Propagate segment (discriminated union)
+    AgVAMCSSegmentAgVAMCSManeuverImpulsive,  # Maneuver segment (discriminated union)
+    IAgVAStoppingConditionElementAgVAApoapsisStoppingCondition,  # Apoapsis stopping condition (discriminated union)
+    IAgVAStoppingConditionElement,  # Union discriminator container for stopping conditions
+    IAgVAAttitudeControlImpulsiveAgVAAttitudeControlImpulsiveVelocityVector,  # VelocityVector impulse
+    Propagator,  # Propagator definition
+    IGravityFunctionGravityFieldFunction,  # Gravity field function (discriminated union)
+    IGravityFunctionTwoBodyFunction,  # Two-body gravity function (discriminated union)
+    IGravityFunction,  # Union discriminator container for gravity models
+    INumericalIntegratorRKF7th8th,  # RKF7(8) numerical integrator (discriminated union)
+    INumericalIntegrator,  # Union discriminator container for numerical integrators
 )
 
 
@@ -31,21 +37,20 @@ def main():
     print("=" * 70)
     print()
 
-    # Initial orbit state: LEO circular orbit
+    # Define initial state with proper Epoch format
+    element = Cartesian(
+        X=6678137.0,  # Position X (m) - at equator
+        Y=0.0,  # Position Y (m)
+        Z=0.0,  # Position Z (m)
+        Vx=0.0,  # Velocity X (m/s)
+        Vy=7726.67,  # Velocity Y (m/s) - circular LEO
+        Vz=0.0,  # Velocity Z (m/s)
+    )
+
     initial_state = AgVAState(
-        Epoch="1 Jan 2024 12:00:00.000",
+        Epoch="2024-01-01T12:00:00.000Z",
         CoordSystemName="Earth Inertial",
-        Element=IAgVAElementAgVAElementCartesian.model_construct(
-            **{
-                "$type": "Cartesian",
-                "X": 6678137.0,  # Position X (m) - at equator
-                "Y": 0.0,  # Position Y (m)
-                "Z": 0.0,  # Position Z (m)
-                "Vx": 0.0,  # Velocity X (m/s)
-                "Vy": 7726.67,  # Velocity Y (m/s) - circular LEO
-                "Vz": 0.0,  # Velocity Z (m/s)
-            }
-        ),
+        Element=element,
     )
 
     print("Mission Profile: LEO to Higher Orbit Transfer")
@@ -65,102 +70,118 @@ def main():
     print()
 
     # Define mission sequence
-    sequence = [
-        # Segment 1: Set initial state
-        AgVAMCSSegmentAgVAMCSInitialState.model_construct(
-            **{
-                "$type": "InitialState",
-                "Name": "InitialLEOState",
-                "InitialState": initial_state.model_dump(by_alias=True),
-            }
-        ),
-        # Segment 2: Propagate to apoapsis
-        PropagateSegment.model_construct(
-            **{
-                "$type": "Propagate",
-                "Name": "PropagateToFirstApoapsis",
-                "PropagatorName": "Earth HPOP",
-                "StopConditions": [
-                    ApoapsisStop(
-                        Name="FirstApoapsis",
-                        CentralBodyName="Earth",
-                        Mu=3.986004418e14,  # Earth's gravitational parameter (m³/s²)
-                    ).model_dump(by_alias=True)
-                ],
-            }
-        ),
-        # Segment 3: First burn - raise periapsis
-        ImpulsiveManeuverSegment(
-            SegmentType="Maneuver",
-            Maneuver=ImpulsiveManeuver(
-                DeltaVVector=Cartesian(
-                    x=0.0,
-                    y=500.0,  # 500 m/s prograde burn
-                    z=0.0,
-                ),
-                Attitude=ImpulsiveAttitude(
-                    AlignmentVector=Cartesian(x=0, y=1, z=0),  # Align with velocity
-                ),
-            ),
-        ),
-        # Segment 4: Propagate to next apoapsis
-        PropagateSegment(
-            SegmentType="Propagate",
-            StoppingConditions=[
-                ApoapsisStop(
-                    Name="TransferApoapsis",
-                    CentralBodyName="Earth",
-                    Mu=3.986004418e14,  # Earth's gravitational parameter (m³/s²)
-                )
-            ],
-        ),
-        # Segment 5: Second burn - circularize
-        ImpulsiveManeuverSegment(
-            SegmentType="Maneuver",
-            Maneuver=ImpulsiveManeuver(
-                DeltaVVector=Cartesian(
-                    x=0.0,
-                    y=350.0,  # 350 m/s prograde burn
-                    z=0.0,
-                ),
-                Attitude=ImpulsiveAttitude(
-                    AlignmentVector=Cartesian(x=0, y=1, z=0),
-                ),
-            ),
-        ),
-        # Segment 6: Propagate one orbit to verify
-        PropagateSegment(
-            SegmentType="Propagate",
-            StoppingConditions=[
-                PeriapsisStop(
-                    Name="VerifyOrbit",
-                    CentralBodyName="Earth",
-                    Mu=3.986004418e14,  # Earth's gravitational parameter (m³/s²)
-                )
-            ],
-        ),
-        # Segment 7: Final propagation to apoapsis
-        PropagateSegment(
-            SegmentType="Propagate",
-            StoppingConditions=[
-                ApoapsisStop(
-                    Name="FinalApoapsis",
-                    CentralBodyName="Earth",
-                    Mu=3.986004418e14,  # Earth's gravitational parameter (m³/s²)
-                )
-            ],
-        ),
-    ]
 
+    # Create initial state segment using discriminated union model
+    # Note: $type must match Literal['InitialState'] in AgVAMCSSegmentAgVAMCSInitialState
+    initial_state_segment = AgVAMCSSegmentAgVAMCSInitialState(
+        field_type="InitialState",
+        Name="InitialLEOState",
+        InitialState=initial_state,
+    )
+
+    # Create apoapsis stopping condition using discriminated union model
+    apoapsis_stop = IAgVAStoppingConditionElementAgVAApoapsisStoppingCondition(
+        field_type="Apoapsis",
+        Active=True,
+        CentralBodyName="Earth",
+        Mu=3.986004418e14,  # Earth's gravitational parameter (m³/s²)
+    )
+    stop_condition1 = IAgVAStoppingConditionElement(root=apoapsis_stop)
+
+    # Create propagate segment using discriminated union model
+    # Note: $type must match Literal['Propagate'] in AgVAMCSSegmentAgVAMCSPropagate
+    propagate_segment1 = AgVAMCSSegmentAgVAMCSPropagate(
+        field_type="Propagate",
+        Name="PropagateToFirstApoapsis",
+        PropagatorName="Earth HPOP",
+        StopConditions=[stop_condition1.model_dump(by_alias=True)],
+        MaxPropagationTime=8640000,  # 100 days max
+    )
+
+    # Create impulsive maneuver segment using discriminated union model
+    # Note: $type must match Literal['ManeuverImpulsive'] in AgVAMCSSegmentAgVAMCSManeuverImpulsive
+    attitude1 = IAgVAAttitudeControlImpulsiveAgVAAttitudeControlImpulsiveVelocityVector(
+        field_type="VelocityVector",
+        DeltaVMagnitude=500.0,  # 500 m/s prograde burn
+    )
+    maneuver_segment1 = AgVAMCSSegmentAgVAMCSManeuverImpulsive(
+        field_type="ManeuverImpulsive",
+        Name="Burn1",
+        PropulsionMethodValue="EngineModel",
+        AttitudeControl=attitude1.model_dump(by_alias=True),
+    )
+
+    # Create second propagate segment to transfer apoapsis
+    apoapsis_stop2 = IAgVAStoppingConditionElementAgVAApoapsisStoppingCondition(
+        field_type="Apoapsis",
+        Active=True,
+        CentralBodyName="Earth",
+        Mu=3.986004418e14,
+    )
+    stop_condition2 = IAgVAStoppingConditionElement(root=apoapsis_stop2)
+    propagate_segment2 = AgVAMCSSegmentAgVAMCSPropagate(
+        field_type="Propagate",
+        Name="PropagateToTransferApoapsis",
+        PropagatorName="Earth HPOP",
+        StopConditions=[stop_condition2.model_dump(by_alias=True)],
+        MaxPropagationTime=8640000,  # 100 days max
+    )
+
+    # Create second impulsive maneuver segment
+    attitude2 = IAgVAAttitudeControlImpulsiveAgVAAttitudeControlImpulsiveVelocityVector(
+        field_type="VelocityVector",
+        DeltaVMagnitude=350.0,  # 350 m/s prograde burn
+    )
+    maneuver_segment2 = AgVAMCSSegmentAgVAMCSManeuverImpulsive(
+        field_type="ManeuverImpulsive",
+        Name="Burn2",
+        PropulsionMethodValue="EngineModel",
+        AttitudeControl=attitude2.model_dump(by_alias=True),
+    )
+
+    # Define propagator for Earth HPOP
+    # Create gravity model (discriminated union) - use simple two-body for testing
+    gravity_model = IGravityFunctionTwoBodyFunction(
+        field_type="TwoBody",
+        Name="Earth Two-Body",
+        Description="Simple two-body gravity model",
+        Mu=3.986004418e14,  # Earth's gravitational parameter (m³/s²)
+    )
+    gravity_container = IGravityFunction(root=gravity_model)
+
+    # Create numerical integrator (discriminated union)
+    integrator = INumericalIntegratorRKF7th8th(
+        field_type="RKF7th8th",
+        Name="RKF7th8th",
+        Description="Runge-Kutta-Fehlberg 7(8) integrator",
+    )
+    integrator_container = INumericalIntegrator(root=integrator)
+
+    earth_hpop = Propagator(
+        Name="Earth HPOP",
+        Description="High Precision Orbit Propagator for Earth",
+        CentralBodyName="Earth",
+        GravityModel=gravity_container,
+        NumericalIntegrator=integrator_container,
+    )
+
+    sequence = [
+        initial_state_segment,
+        propagate_segment1,
+        maneuver_segment1,
+        propagate_segment2,
+        maneuver_segment2,
+    ]
     print("Executing Mission Control Sequence...")
     print()
 
-    # Run MCS
     result = run_mcs(
         central_body="Earth",
         main_sequence=sequence,
         name="LEO_Orbit_Raising",
         description="Hohmann transfer from 300km to higher orbit",
+        gravitational_parameter=3.986004418e14,  # Earth's mu (m³/s²)
+        propagators=[earth_hpop],
     )
 
     # Display results
@@ -168,145 +189,59 @@ def main():
     print("=" * 70)
     print()
 
-    if "SegmentResults" in result and result["SegmentResults"]:
-        segment_results = result["SegmentResults"]
-        print(f"Total Segments Executed: {len(segment_results)}")
+    # Access MainSequenceResults directly
+    segment_results = result["MainSequenceResults"]
+    print(f"Total Segments: {len(segment_results)}")
+
+    total_delta_v = 0.0
+
+    for i, seg_result in enumerate(segment_results, 1):
+        # Identify segment type by $type discriminator
+        seg_type = seg_result["$type"]
+        print(f"Segment {i}: {seg_type}")
+
+        if seg_type == "InitialState":
+            initial = seg_result["InitialState"]
+            epoch = initial["Epoch"]
+            print(f"  Epoch: {epoch}")  # should be 2024-01-01T12:00:00.000Z
+            cartesian = initial["Cartesian"]
+            x, y, z = cartesian["X"], cartesian["Y"], cartesian["Z"]
+            pos_mag = (x**2 + y**2 + z**2)**0.5
+            alt = (pos_mag - 6378137) / 1000
+            print(f"  Starting Altitude: {alt:.1f} km")  # expected: ~300 km
+
+        elif seg_type == "PropagateResult":
+            duration = seg_result["DurationSec"]
+            print(f"  Duration: {duration:.2f} seconds ({duration/60:.2f} minutes)")
+
+            final_state = seg_result["FinalState"]
+            epoch = final_state["Epoch"]
+            cartesian = final_state["Cartesian"]
+            print(f"  Final Epoch: {epoch}")
+
+            x, y, z = cartesian["X"], cartesian["Y"], cartesian["Z"]
+            vx, vy, vz = cartesian["Vx"], cartesian["Vy"], cartesian["Vz"]
+            pos_mag = (x**2 + y**2 + z**2)**0.5
+            vel_mag = (vx**2 + vy**2 + vz**2)**0.5
+            altitude = (pos_mag - 6378137) / 1000
+            print(f"  Final Altitude: {altitude:.1f} km")  # example: first propagate ~300 km, second ~higher
+            print(f"  Final Velocity: {vel_mag:.2f} m/s")  # example: first propagate ~7720 m/s (circular), second varies
+
+        elif seg_type == "ManeuverImpulsiveResult":
+            maneuver_info = seg_result["ManeuverInformation"]
+            dv_mag = maneuver_info["DeltaV_Mag"]
+            total_delta_v += dv_mag
+            print(f"  Delta-V Applied: {dv_mag:.2f} m/s")  # example: 500.0 for burn1, 350.0 for burn2
+            print(f"  Fuel Used: {maneuver_info['FuelUsed']:.2f} kg")
+
+            # DeltaV vector available in maneuver_info['DeltaV_Inertial'] or maneuver_info['DeltaV_VNC']
+
         print()
 
-        total_delta_v = 0.0
-
-        for i, seg_result in enumerate(segment_results, 1):
-            seg_type = seg_result.get("SegmentType", "Unknown")
-            print(f"Segment {i}: {seg_type}")
-            print("-" * 70)
-
-            # Initial state segment
-            if seg_type == "InitialState":
-                initial = seg_result.get("InitialState", {})
-                epoch = initial.get("Epoch", "N/A")
-                print(f"  Epoch: {epoch}")
-
-            # Propagate segment
-            elif seg_type == "Propagate":
-                final_state = seg_result.get("FinalState", {})
-                duration = seg_result.get("Duration", 0)
-                print(f"  Duration: {duration:.2f} seconds ({duration/60:.2f} minutes)")
-
-                if "Element" in final_state:
-                    elem = final_state["Element"]
-                    if isinstance(elem, dict):
-                        # Show position/velocity if Cartesian
-                        if "x" in elem:
-                            pos_mag = (elem["x"]**2 + elem["y"]**2 + elem["z"]**2)**0.5
-                            vel_mag = (elem["vx"]**2 + elem["vy"]**2 + elem["vz"]**2)**0.5
-                            altitude = (pos_mag - 6378137) / 1000  # km
-                            print(f"  Final Altitude: {altitude:.1f} km")
-                            print(f"  Final Velocity: {vel_mag:.2f} m/s")
-
-            # Maneuver segment
-            elif seg_type == "Maneuver":
-                maneuver_result = seg_result.get("ManeuverResult", {})
-                dv_vector = maneuver_result.get("DeltaVVector", {})
-
-                if isinstance(dv_vector, dict) and "x" in dv_vector:
-                    dv_mag = (dv_vector["x"]**2 + dv_vector["y"]**2 +
-                              dv_vector["z"]**2)**0.5
-                    total_delta_v += dv_mag
-                    print(f"  Delta-V Applied: {dv_mag:.2f} m/s")
-                    print(f"  Delta-V Vector: ({dv_vector['x']:.1f}, "
-                          f"{dv_vector['y']:.1f}, {dv_vector['z']:.1f}) m/s")
-
-            print()
-
-        # Mission summary
-        print("=" * 70)
-        print("Mission Summary:")
-        print("-" * 70)
-        print(f"Total Delta-V Used: {total_delta_v:.2f} m/s")
-        print(f"Total Delta-V Used: {total_delta_v/1000:.3f} km/s")
-        print()
-        print("Mission Analysis:")
-        print("  - Hohmann transfer is the most fuel-efficient two-burn transfer")
-        print("  - First burn raises apoapsis (transfer orbit injection)")
-        print("  - Second burn circularizes at higher altitude")
-        print(f"  - Total delta-V: ~{total_delta_v:.0f} m/s")
-
-    else:
-        print("No segment results returned.")
-        print()
-        print("Possible issues:")
-        print("  - Invalid initial state")
-        print("  - Propagation errors")
-        print("  - Stopping condition not met")
-
-    print()
-    print("Applications:")
-    print("-" * 70)
-    print("  - Orbit transfer mission design")
-    print("  - Rendezvous trajectory planning")
-    print("  - Station-keeping maneuver optimization")
-    print("  - Fuel budget analysis")
-    print("  - Launch window analysis")
-    print("  - Interplanetary trajectory design")
-
-    print()
-    print("MCS execution completed successfully!")
     print("=" * 70)
+    print(f"Total Delta-V Used: {total_delta_v:.2f} m/s")  # example: ~850.0 m/s for both burns
+    print(f"Total Delta-V Used: {total_delta_v/1000:.3f} km/s")
 
 
 if __name__ == "__main__":
     main()
-
-    # Example output:
-    # >>> ======================================================================
-    # >>> Mission Control Sequence: LEO Orbit Raising Maneuver
-    # >>> ======================================================================
-    # >>>
-    # >>> Mission Profile: LEO to Higher Orbit Transfer
-    # >>> ----------------------------------------------------------------------
-    # >>> Initial Orbit:
-    # >>>   Altitude: ~300 km
-    # >>>   Type: Circular LEO
-    # >>>   Velocity: ~7.73 km/s
-    # >>>
-    # >>> Maneuver Sequence:
-    # >>>   1. Initial State: Set spacecraft in LEO
-    # >>>   2. Propagate to apoapsis
-    # >>>   3. Burn 1: Raise periapsis (Hohmann transfer burn)
-    # >>>   4. Propagate to new apoapsis
-    # >>>   5. Burn 2: Circularize orbit
-    # >>>   6. Propagate one orbit to verify
-    # >>>
-    # >>> Traceback (most recent call last):
-    # >>>   File "/home/betelgeuse/Developments/astrox-client/examples/10_astrogator/run_mcs.py", line 254, in <module>
-    # >>>     main()
-    # >>>   File "/home/betelgeuse/Developments/astrox-client/examples/10_astrogator/run_mcs.py", line 78, in main
-    # >>>     PropagateSegment.model_construct(
-    # >>>         **{
-    # >>>             "$type": "Propagate",
-    # >>>             "Name": "PropagateToFirstApoapsis",
-    # >>>             "PropagatorName": "Earth HPOP",
-    # >>>             "StopConditions": [
-    # >>>                 ApoapsisStop(
-    # >>>                     Name="FirstApoapsis",
-    # >>>                     CentralBodyName="Earth",
-    # >>>                     Mu=3.986004418e14,  # Earth's gravitational parameter (m³/s²)
-    # >>>                 ).model_dump(by_alias=True)
-    # >>>             ],
-    # >>>         }
-    # >>>     ),
-    # >>>   File "/home/betelgeuse/Developments/astrox-client/.venv/lib/python3.13/site-packages/pydantic/main.py", line 250, in __init__
-    # >>>     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
-    # >>> pydantic_core._pydantic_core.ValidationError: 4 validation errors for AgVAMCSSegmentAgVAMCSPropagate
-    # >>> $type
-    # >>>   Field required [type=missing, input_value={'SegmentType': 'Propagat... Mu=398600441800000.0)]}, input_type=dict]
-    # >>>     For further information visit https://errors.pydantic.dev/2.12/v/missing
-    # >>> PropagatorName
-    # >>>   Field required [type=missing, input_value={'SegmentType': 'Propagat... Mu=398600441800000.0)]}, input_type=dict]
-    # >>>     For further information visit https://errors.pydantic.dev/2.12/v/missing
-    # >>> StopConditions
-    # >>>   Field required [type=missing, input_value={'SegmentType': 'Propagat... Mu=398600441800000.0)]}, input_type=dict]
-    # >>>     For further information visit https://errors.pydantic.dev/2.12/v/missing
-    # >>> Name
-    # >>>   Field required [type=missing, input_value={'SegmentType': 'Propagat... Mu=398600441800000.0)]}, input_type=dict]
-    # >>>     For further information visit https://errors.pydantic.dev/2.12/v/missing

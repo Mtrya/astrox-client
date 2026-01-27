@@ -51,51 +51,50 @@ def main():
     print("=" * 60)
     print("Ballistic Trajectory Results")
     print("=" * 60)
-    print(f"Success: {result.get('IsSuccess', 'N/A')}")
-    print(f"Message: {result.get('Message', 'N/A')}")
+    print(f"Success: {result['IsSuccess']}")
+    print(f"Message: {result['Message']}")
 
-    if 'CzmlPositions' in result:
-        positions = result['CzmlPositions']
-        num_points = len(positions) // 3
-        print(f"\nGenerated {num_points} position points")
+    # Extract position data from 'Position' dict's 'cartesianVelocity' field
+    # The API returns positions as a flattened list of [x, y, z, x, y, z, ...]
+    positions = result['Position']['cartesianVelocity']
+    num_points = len(positions) // 3
+    print(f"\nGenerated {num_points} position points")  # should be ~210 points for 5s steps
 
-        # Calculate trajectory parameters
-        if num_points > 0:
-            # Find apogee (highest point)
-            max_altitude = 0
-            earth_radius = 6378137.0
+    # Find apogee (highest point)
+    max_altitude = 0
+    earth_radius = 6378137.0
 
-            for i in range(num_points):
-                idx = i * 3
-                if idx + 2 < len(positions):
-                    x, y, z = positions[idx:idx+3]
-                    r = (x**2 + y**2 + z**2) ** 0.5
-                    altitude = r - earth_radius
-                    if altitude > max_altitude:
-                        max_altitude = altitude
+    for i in range(num_points):
+        idx = i * 3
+        if idx + 2 < len(positions):
+            x, y, z = positions[idx:idx+3]
+            r = (x**2 + y**2 + z**2) ** 0.5
+            altitude = r - earth_radius
+            if altitude > max_altitude:
+                max_altitude = altitude
 
-            # Time of flight
-            duration_seconds = (num_points - 1) * 5.0  # 5-second steps
-            duration_minutes = duration_seconds / 60.0
+    # Time of flight
+    duration_seconds = (num_points - 1) * 5.0  # 5-second steps
+    duration_minutes = duration_seconds / 60.0
 
-            print(f"\nTrajectory Parameters:")
-            print(f"  Apogee altitude: {max_altitude/1000:.1f} km")
-            print(f"  Time of flight: {duration_minutes:.2f} minutes ({duration_seconds:.0f} seconds)")
-            print(f"  Step size: 5 seconds")
+    print(f"\nTrajectory Parameters:")
+    print(f"  Apogee altitude: {max_altitude/1000:.1f} km")
+    print(f"  Time of flight: {duration_minutes:.2f} minutes ({duration_seconds:.0f} seconds)")
+    print(f"  Step size: 5 seconds")
 
-            # Calculate ground range (approximate)
-            # This is a simplified calculation
-            import math
-            dlat = abs(impact_lat - launch_lat)
-            dlon = abs(impact_lon - launch_lon)
-            # Great circle distance approximation
-            ground_range = earth_radius * math.sqrt(
-                (dlat * math.pi/180)**2 +
-                (dlon * math.pi/180 * math.cos(launch_lat * math.pi/180))**2
-            )
+    # Calculate ground range (approximate)
+    # This is a simplified calculation
+    import math
+    dlat = abs(impact_lat - launch_lat)
+    dlon = abs(impact_lon - launch_lon)
+    # Great circle distance approximation
+    ground_range = earth_radius * math.sqrt(
+        (dlat * math.pi/180)**2 +
+        (dlon * math.pi/180 * math.cos(launch_lat * math.pi/180))**2
+    )
 
-            print(f"  Ground range: {ground_range/1000:.1f} km")
-            print(f"  Average velocity: {ground_range/duration_seconds:.0f} m/s")
+    print(f"  Ground range: {ground_range/1000:.1f} km")
+    print(f"  Average velocity: {ground_range/duration_seconds:.0f} m/s")
 
     print("\n" + "=" * 60)
     print("Ballistic Trajectory Types:")
@@ -114,31 +113,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-"""
-Example output:
->>> Computing ballistic trajectory...
->>> Launch: (28.5721°, -80.6480°) at 10.0 m
->>> Impact: (30.0000°, -70.0000°) at 0.0 m
->>>
->>> ============================================================
->>> Ballistic Trajectory Results
->>> ============================================================
->>> Success: True
->>> Message: Success
->>>
->>> ============================================================
->>> Ballistic Trajectory Types:
->>>   - DeltaV: Specify initial velocity magnitude
->>>   - DeltaV_MinEcc: Minimum eccentricity trajectory
->>>   - ApogeeAlt: Specify maximum altitude (used here)
->>>   - TimeOfFlight: Specify flight duration
->>>
->>> Applications:
->>>   - Suborbital space tourism (Blue Origin, Virgin Galactic)
->>>   - Sounding rockets for atmospheric research
->>>   - First stage recovery impact prediction
->>>   - Military trajectory analysis
->>> ============================================================
-"""

@@ -32,12 +32,14 @@ result_leo = compute_lifetime(
     mass=mass_leo,
 )
 
+# Verified data structure: result contains 'LifeYears' key with value in years
+lifetime = result_leo['LifeYears']
+
 print(f"\nSatellite: {leo_tle.SAT_Name}")
 print(f"Mass: {mass_leo} kg")
 print(f"Surface area: {surface_area_leo} m²")
 print(f"Area-to-mass ratio: {surface_area_leo / mass_leo:.4f} m²/kg")
-lifetime = result_leo.get('Lifetime') or result_leo.get('LifeYears', 'N/A')
-print(f"\nEstimated orbital lifetime: {lifetime:.2f} years" if isinstance(lifetime, (int, float)) else f"\nEstimated orbital lifetime: {lifetime}")
+print(f"\nEstimated orbital lifetime: {lifetime:.2f} years")  # e.g., 1.13 years
 
 # Example 2: Different altitudes comparison
 print("\n" + "=" * 70)
@@ -52,7 +54,7 @@ altitudes = [
 ]
 
 print(f"\nLifetime vs altitude (constant mass={mass_leo} kg, area={surface_area_leo} m²):")
-print(f"{'Altitude':<15} {'Lifetime (years)':<20}")
+print(f"{'Altitude':<15} {'Lifetime (years)':<20}")  # Header
 print("-" * 35)
 
 for alt_name, line1, line2 in altitudes:
@@ -70,11 +72,8 @@ for alt_name, line1, line2 in altitudes:
         mass=mass_leo,
     )
 
-    lifetime = result.get("Lifetime") or result.get("LifeYears", "N/A")
-    if isinstance(lifetime, (int, float)):
-        print(f"{alt_name:<15} {lifetime:.2f}")
-    else:
-        print(f"{alt_name:<15} {lifetime}")
+    lifetime = result["LifeYears"]
+    print(f"{alt_name:<15} {lifetime:.2f}")
 
 # Example 3: Area-to-mass ratio impact
 print("\n" + "=" * 70)
@@ -97,7 +96,7 @@ configurations = [
 ]
 
 print(f"\nLifetime at 600 km altitude with different configurations:")
-print(f"{'Configuration':<20} {'Mass (kg)':<12} {'Area (m²)':<12} {'A/M Ratio':<12} {'Lifetime (yrs)'}")
+# Comparative table of configuration impact
 print("-" * 75)
 
 for config_name, mass, area in configurations:
@@ -109,9 +108,8 @@ for config_name, mass, area in configurations:
     )
 
     a_to_m = area / mass
-    lifetime = result.get("Lifetime") or result.get("LifeYears", "N/A")
-    lifetime_str = f"{lifetime:.2f}" if isinstance(lifetime, (int, float)) else lifetime
-    print(f"{config_name:<20} {mass:<12.1f} {area:<12.1f} {a_to_m:<12.5f} {lifetime_str}")
+    lifetime = result["LifeYears"]
+    print(f"{config_name:<20} {mass:<12.1f} {area:<12.1f} {a_to_m:<12.5f} {lifetime:.2f}")
 
 # Example 4: Debris cloud lifetime analysis
 print("\n" + "=" * 70)
@@ -127,7 +125,7 @@ debris_scenarios = [
 ]
 
 print(f"\nDebris lifetime analysis:")
-print(f"{'Type':<18} {'Alt (km)':<10} {'Mass (kg)':<12} {'Area (m²)':<12} {'Lifetime (yrs)'}")
+print(f"{'Type':<18} {'Alt (km)':<10} {'Mass (kg)':<12} {'Area (m²)':<12} {'Lifetime (yrs)'}")  # Header
 print("-" * 70)
 
 for debris_type, altitude, mass, area, line1, line2 in debris_scenarios:
@@ -145,9 +143,8 @@ for debris_type, altitude, mass, area, line1, line2 in debris_scenarios:
         mass=mass,
     )
 
-    lifetime = result.get("Lifetime") or result.get("LifeYears", "N/A")
-    lifetime_str = f"{lifetime:.2f}" if isinstance(lifetime, (int, float)) else lifetime
-    print(f"{debris_type:<18} {altitude:<10} {mass:<12.1f} {area:<12.2f} {lifetime_str}")
+    lifetime = result["LifeYears"]
+    print(f"{debris_type:<18} {altitude:<10} {mass:<12.1f} {area:<12.2f} {lifetime:.2f}")
 
 # Example 5: High-drag satellite (deliberate de-orbit)
 print("\n" + "=" * 70)
@@ -188,20 +185,19 @@ result_drag_sail = compute_lifetime(
     mass=1000.0,
 )
 
-lifetime_std = result_standard.get("Lifetime") or result_standard.get("LifeYears", "N/A")
-lifetime_sail = result_drag_sail.get("Lifetime") or result_drag_sail.get("LifeYears", "N/A")
+lifetime_std = result_standard["LifeYears"]
+lifetime_sail = result_drag_sail["LifeYears"]
 
 print(f"\nStandard configuration:")
 print(f"  Area: 20 m², Mass: 1000 kg")
-print(f"  Lifetime: {lifetime_std:.2f} years" if isinstance(lifetime_std, (int, float)) else f"  Lifetime: {lifetime_std}")
+print(f"  Lifetime: {lifetime_std:.2f} years")
 
 print(f"\nWith drag sail deployed:")
 print(f"  Area: 120 m², Mass: 1000 kg")
-print(f"  Lifetime: {lifetime_sail:.2f} years" if isinstance(lifetime_sail, (int, float)) else f"  Lifetime: {lifetime_sail}")
+print(f"  Lifetime: {lifetime_sail:.2f} years")
 
-if isinstance(lifetime_std, (int, float)) and isinstance(lifetime_sail, (int, float)) and lifetime_sail > 0:
-    reduction_factor = lifetime_std / lifetime_sail
-    print(f"  De-orbit time reduced by factor of {reduction_factor:.1f}")
+reduction_factor = lifetime_std / lifetime_sail
+print(f"  De-orbit time reduced by factor of {reduction_factor:.1f}")
 
 print("\n" + "=" * 70)
 print("Orbital Lifetime Analysis Complete")
@@ -222,88 +218,3 @@ print("  - Deploy drag sails to increase area")
 print("  - Lower perigee with propulsive maneuver")
 print("  - 25-year rule: Remove from LEO within 25 years post-mission")
 
-"""
->>> ======================================================================
->>> Example 1: LEO Satellite Lifetime (~400 km)
->>> ======================================================================
->>>
->>> Satellite: LEO-SAT-400KM
->>> Mass: 5000.0 kg
->>> Surface area: 25.0 m²
->>> Area-to-mass ratio: 0.0050 m²/kg
->>>
->>> Estimated orbital lifetime: 1.13 years
->>>
->>> ======================================================================
->>> Example 2: Altitude Impact on Lifetime
->>> ======================================================================
->>>
->>> Lifetime vs altitude (constant mass=5000.0 kg, area=25.0 m²):
->>> Altitude        Lifetime (years)
->>> -----------------------------------
->>> 300 km          0.40
->>> 500 km          3.98
->>> 700 km          25.00
->>> 900 km          25.00
->>>
->>> ======================================================================
->>> Example 3: Area-to-Mass Ratio Impact
->>> ======================================================================
->>>
->>> Lifetime at 600 km altitude with different configurations:
->>> Configuration        Mass (kg)    Area (m²)    A/M Ratio    Lifetime (yrs)
->>> ---------------------------------------------------------------------------
->>> Small dense          5000.0       10.0         0.00200      25.00
->>> Standard             5000.0       25.0         0.00500      5.19
->>> Large light          1000.0       25.0         0.02500      1.14
->>> Debris fragment      50.0         2.0          0.04000      0.75
->>>
->>> ======================================================================
->>> Example 4: Debris Cloud Lifetime Analysis
->>> ======================================================================
->>>
->>> Debris lifetime analysis:
->>> Type               Alt (km)   Mass (kg)    Area (m²)    Lifetime (yrs)
->>> ----------------------------------------------------------------------
->>> Large fragment     400        100.0        5.00         0.16
->>> Medium fragment    500        50.0         5.00         0.28
->>> Small fragment     600        10.0         2.00         0.18
->>> Tiny flake         700        0.5          0.05         0.70
->>>
->>> ======================================================================
->>> Example 5: De-orbit Scenarios
->>> ======================================================================
->>>
->>> Comparing de-orbit methods (500 km altitude):
->>>
->>> Standard configuration:
->>>   Area: 20 m², Mass: 1000 kg
->>>   Lifetime: 1.06 years
->>>
->>> With drag sail deployed:
->>>   Area: 120 m², Mass: 1000 kg
->>>   Lifetime: 0.23 years
->>>   De-orbit time reduced by factor of 4.6
->>>
->>> ======================================================================
->>> Orbital Lifetime Analysis Complete
->>> ======================================================================
->>>
->>> Key Factors Affecting Lifetime:
->>>   1. Altitude: Higher altitude = longer lifetime (exponential)
->>>   2. Area-to-Mass Ratio: Higher A/M = shorter lifetime
->>>   3. Solar Activity: Increased atmospheric density during solar max
->>>   4. Inclination: Affects atmospheric density encounters
->>>
->>> Typical Lifetimes:
->>>   - 200-300 km: Days to weeks
->>>   - 400-500 km: Months to few years
->>>   - 600-700 km: Several years to decades
->>>   - 800+ km: Decades to centuries
->>>   - 1000+ km: Centuries (debris problem)
->>>
->>> De-orbit Mitigation:
->>>   - Deploy drag sails to increase area
->>>   - Lower perigee with propulsive maneuver
->>>   - 25-year rule: Remove from LEO within 25 years post-mission
-"""

@@ -39,33 +39,33 @@ def main():
     print("=" * 60)
     print("SGP4 Propagation Results (ISS)")
     print("=" * 60)
-    print(f"Success: {result.get('IsSuccess', 'N/A')}")
-    print(f"Message: {result.get('Message', 'N/A')}")
+    print(f"Success: {result['IsSuccess']}")
+    print(f"Message: {result['Message']}")
 
-    if 'CzmlPositions' in result:
-        positions = result['CzmlPositions']
-        num_points = len(positions) // 3
-        print(f"\nGenerated {num_points} position points")
-        print(f"Step size: 120 seconds (2 minutes)")
-        print(f"Duration: 3 days")
+    # Access position data from 'Position' dict's 'cartesianVelocity' field
+    positions = result['Position']['cartesianVelocity']
+    num_points = len(positions) // 3
+    print(f"\nGenerated {num_points} position points")  # should be 2161 for 3 days at 120s steps
+    print(f"Step size: 120 seconds (2 minutes)")
+    print(f"Duration: 3 days")
 
-        # ISS orbital period is approximately 92.9 minutes
-        iss_period_minutes = 92.9
-        orbits_per_day = 1440 / iss_period_minutes
+    # ISS orbital period is approximately 92.9 minutes
+    iss_period_minutes = 92.9
+    orbits_per_day = 1440 / iss_period_minutes
 
-        print(f"\nISS orbital period: ~{iss_period_minutes:.1f} minutes")
-        print(f"Orbits per day: ~{orbits_per_day:.1f}")
-        print(f"Total orbits in 3 days: ~{orbits_per_day * 3:.0f}")
+    print(f"\nISS orbital period: ~{iss_period_minutes:.1f} minutes")
+    print(f"Orbits per day: ~{orbits_per_day:.1f}")
+    print(f"Total orbits in 3 days: ~{orbits_per_day * 3:.0f}")
 
-        # Show sample positions
-        print(f"\nSample positions (first 3 points):")
-        for i in range(min(3, num_points)):
-            idx = i * 3
-            if idx + 2 < len(positions):
-                x, y, z = positions[idx:idx+3]
-                r = (x**2 + y**2 + z**2) ** 0.5
-                altitude_km = (r - 6378137.0) / 1000.0
-                print(f"  Point {i+1}: r={r/1e6:.3f} km, alt={altitude_km:.1f} km")
+    # Show sample positions
+    print(f"\nSample positions (first 3 points):")
+    for i in range(min(3, num_points)):
+        idx = i * 3
+        if idx + 2 < len(positions):
+            x, y, z = positions[idx:idx+3]
+            r = (x**2 + y**2 + z**2) ** 0.5
+            altitude_km = (r - 6378137.0) / 1000.0
+            print(f"  Point {i+1}: r={r/1e6:.3f} km, alt={altitude_km:.1f} km")
 
     print("\n" + "=" * 60)
     print("SGP4 Model Features:")
@@ -78,25 +78,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-"""
-Example output:
->>> Propagating ISS orbit using SGP4...
->>> TLE Line 1: 1 25544U 98067A   24001.00000000  .00002182  00000-0  41420-4 0  9990
->>> TLE Line 2: 2 25544  51.6461 339.8014 0001882  64.8995 295.2305 15.48919393123456
->>>
->>> ============================================================
->>> SGP4 Propagation Results (ISS)
->>> ============================================================
->>> Success: True
->>> Message: Success
->>>
->>> ============================================================
->>> SGP4 Model Features:
->>> - Incorporates atmospheric drag (from TLE B* parameter)
->>> - Includes simplified perturbations (J2, J3, J4)
->>> - Standard for NORAD catalog orbit predictions
->>> - Accuracy degrades after 5-7 days from TLE epoch
->>> ============================================================
-"""

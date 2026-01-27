@@ -122,6 +122,7 @@ from astrox._models import (
     KeplerElementsWithEpoch,
     MeanKeplerElements,
     RectangularSensor,
+    RocketSegmentInfo,
     Spherical,
     TleInfo,
 )
@@ -413,6 +414,7 @@ __all__ = [
     "AccessData",
     "ConicSensor",
     "EntityPath",
+    "RocketSegmentInfo",
     "RectangularSensor",
     "TleInfo",
 ]
