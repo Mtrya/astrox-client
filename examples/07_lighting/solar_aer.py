@@ -1,10 +1,3 @@
-"""
-Calculate solar azimuth, elevation, and range from ground station.
-
-This example demonstrates solar AER calculation for ground stations,
-useful for solar panel positioning, shadow analysis, and thermal studies.
-"""
-
 from astrox.lighting import solar_aer
 from astrox.models import EntityPositionSite
 
@@ -55,8 +48,8 @@ def main():
     print("Solar Position Results:")
     print("-" * 70)
 
-    if "SolarAER" in result and result["SolarAER"]:
-        aer_data = result["SolarAER"]
+    if "Datas" in result and result["Datas"]:
+        aer_data = result["Datas"]
         print(f"Total Data Points: {len(aer_data)}")
         print()
 
@@ -161,7 +154,38 @@ if __name__ == "__main__":
 >>>
 >>> Solar Position Results:
 >>> ----------------------------------------------------------------------
->>> No solar AER data returned.
+>>> Total Data Points: 97
+>>>
+>>> Key Solar Events:
+>>> ----------------------------------------------------------------------
+>>>   Sunset:      2024-06-21T11:40:00.000Z
+>>>   Solar Noon:  2024-06-21T04:20:00.000Z
+>>>   Max Elevation: 73.51° (Sun at highest point)
+>>>
+>>> Detailed Solar Position:
+>>> Time (UTC)                Azimuth (°)  Elevation (°)   Range (AU)
+>>> ----------------------------------------------------------------------
+>>> 2024-06-21T04:00:00.000Z      167.01          73.17     0.001016
+>>> 2024-06-21T08:00:00.000Z      268.14          40.50     0.001016
+>>> 2024-06-21T12:00:00.000Z      304.27          -3.01     0.001016
+>>> 2024-06-21T16:00:00.000Z      355.80         -26.54     0.001016
+>>> 2024-06-21T20:00:00.000Z       50.11          -8.02     0.001016
+>>>
+>>> Solar Geometry Notes:
+>>> ----------------------------------------------------------------------
+>>> Location Latitude: 39.9° N
+>>> Theoretical Max Solar Elevation: 73.6° (summer solstice)
+>>> Measured Max Elevation: 73.5°
+>>>
+>>> Azimuth Convention:
+>>>   0° = North, 90° = East, 180° = South, 270° = West
+>>>
+>>> Applications:
+>>>   - Solar panel optimal tilt angle calculation
+>>>   - Building shadow analysis
+>>>   - Solar thermal system design
+>>>   - Daylighting architecture studies
+>>>   - Agricultural sunlight exposure planning
 >>>
 >>> Solar AER calculation completed successfully!
 >>> ======================================================================

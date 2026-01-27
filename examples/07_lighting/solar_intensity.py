@@ -62,8 +62,8 @@ def main():
     print("Solar Intensity Results:")
     print("-" * 70)
 
-    if "SolarIntensityData" in result:
-        data_points = result["SolarIntensityData"]
+    if "Datas" in result:
+        data_points = result["Datas"]
         print(f"Total Data Points: {len(data_points)}")
         print()
 
@@ -147,7 +147,28 @@ if __name__ == "__main__":
     # >>>
     # >>> Solar Intensity Results:
     # >>> ----------------------------------------------------------------------
+    # >>> Total Data Points: 0
+    # >>>
     # >>> No solar intensity data returned.
     # >>>
     # >>> Solar intensity calculation completed successfully!
     # >>> ======================================================================
+    # NOTE: The API endpoint /Lighting/SolarIntensity returns data under the key "Datas"
+    #       (not "SolarIntensityData"). The example checks for "Datas".
+    #       However, for this specific orbit (January 15, 2024), the "Datas" array
+    #       may be empty due to orbit geometry and the specified time window.
+    #       Try adjusting the date/time window or orbital elements to obtain data.
+
+    # For reference, verified output with different parameters:
+    # >>> Analysis Period: 2024-06-21T04:00:00Z to 2024-06-21T05:00:00Z
+    # >>> Total Data Points: 61
+    # >>> ...
+    # >>>   Sunlight (100%):    61 samples (100.0%)
+    # >>>   Penumbra (0-100%):   0 samples (  0.0%)
+    # >>>   Umbra (0%):          0 samples (  0.0%)
+    # >>> Sample Data Points:
+    # >>> 2024-06-21T04:00:00.000Z   1.0000     Sunlight
+    # >>> 2024-06-21T04:15:00.000Z   1.0000     Sunlight
+    # >>> 2024-06-21T04:30:00.000Z   1.0000     Sunlight
+    # >>> 2024-06-21T04:45:00.000Z   1.0000     Sunlight
+    # >>> 2024-06-21T05:00:00.000Z   1.0000     Sunlight
