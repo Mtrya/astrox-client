@@ -20,18 +20,11 @@ from astrox._models import LinkConnection
 
 
 def main():
+    """Compute multi-hop access chains between ground stations via relay satellites."""
     print("=" * 70)
     print("Access Chain Computation: Ground → Relay Satellites → Ground")
     print("=" * 70)
     print()
-
-    print("WARNING: This example may fail with HTTP 500 (server-side error).")
-    print("The /access/ChainCompute endpoint can be unstable on the server.")
-    print("See examples/03_access/issues.md for details.")
-    print()
-    print("=" * 70)
-    print()
-
 
     # Define analysis time window
     start = "2022-04-25T00:00:00Z"
@@ -158,15 +151,17 @@ def main():
     print(f"Analysis Period: {start} to {stop}")
     print()
     print("Network Topology:")
-    print(f"  Transmitter: {transmitter.Name} (Florida)")
-    print(f"  Relay 1: {relay1.Name} (LEO)")
-    print(f"  Relay 2: {relay2.Name} (LEO)")
-    print(f"  Receiver: {receiver.Name} (Europe)")
-    print(f"  Total Links: {len(connections)}")
+    print(f"  Transmitter: {transmitter.Name} (Florida)")  # Name='Transmitter'
+    print(f"  Relay 1: {relay1.Name} (LEO)")              # Name='Relay_1'
+    print(f"  Relay 2: {relay2.Name} (LEO)")              # Name='Relay_2'
+    print(f"  Receiver: {receiver.Name} (Europe)")        # Name='Receiver'
+    print(f"  Total Links: {len(connections)}")           # 5
     print()
 
     # Compute access chain
     print("Computing access chains from Transmitter to Receiver...")
+    # Endpoint: POST /access/ChainCompute
+    # The API returns ChainOutput structure (see OpenAPI spec)
     result = compute_chain(
         start=start,
         stop=stop,
@@ -182,31 +177,32 @@ def main():
     print("Access Chain Results:")
     print("-" * 70)
 
-    if "AccessData" in result and result["AccessData"]:
-        chain_intervals = result["AccessData"]
-        print(f"Total Complete Chain Intervals: {len(chain_intervals)}")
-        print()
+    # Expected structure based on OpenAPI spec:
+    # ChainOutput: {IsSuccess: bool, Message: str, ComputedStrands: list[list[str]],
+    #               CompleteChainAccess: list[TimeIntervalData], IndividualStrandAccess: dict,
+    #               IndividualObjectAccess: dict}
+    # TimeIntervalData: {Start: str, Stop: str, Duration: float}
+
+    # Check IsSuccess flag
+    if not result["IsSuccess"]:
+        print(f"Computation failed: {result['Message']}")
+        return
+
+    # CompleteChainAccess contains list of TimeIntervalData with Start, Stop, Duration
+    chain_intervals = result["CompleteChainAccess"]
+    if not chain_intervals:
+        print("No complete access chains found.")
+        print("Note: Complete chains require simultaneous access across all links.")
+        print("Try adjusting time window, orbits, or sensor angles.")
+    else:
+        print(f"Complete Chain Access Intervals: {len(chain_intervals)}")
 
         for i, interval in enumerate(chain_intervals, 1):
             print(f"Chain Access Window {i}:")
-            print(f"  Start: {interval.get('Start')}")
-            print(f"  Stop:  {interval.get('Stop')}")
-            print(f"  Duration: {interval.get('Duration', 0):.2f} seconds")
-
-            # Show chain path if available
-            if "ChainPath" in interval:
-                path = interval["ChainPath"]
-                print(f"  Path: {' → '.join(path)}")
-
+            print(f"  Start: {interval['Start']}")
+            print(f"  Stop:  {interval['Stop']}")
+            print(f"  Duration: {interval['Duration']:.2f} seconds")
             print()
-    else:
-        print("No complete access chains found during the analysis period.")
-        print()
-        print("Note: Complete chains require simultaneous access across all links.")
-        print("Try adjusting:")
-        print("  - Analysis time window (longer period)")
-        print("  - Relay satellite orbits (different planes)")
-        print("  - Sensor cone angles (wider coverage)")
 
     print()
     print("Access chain computation completed successfully!")

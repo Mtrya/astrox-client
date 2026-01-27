@@ -13,3 +13,4 @@ wheels/
 docs/internal/
 *.md
 !README.md
+!examples/*/*.md
