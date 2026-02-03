@@ -174,7 +174,24 @@ python examples/01_propagation/two_body.py
 
 # Run with custom API endpoint
 ASTROX_BASE_URL=http://localhost:8765 python examples/01_propagation/two_body.py
+
+# Run with uv (respects PEP 723 metadata)
+uv run examples/01_propagation/two_body.py
 ```
+
+## Template
+
+Use `examples/TEMPLATE.py` as a starting point for new examples:
+
+```bash
+cp examples/TEMPLATE.py examples/01_propagation/my_example.py
+```
+
+The template demonstrates:
+- PEP 723 metadata for dependencies
+- Proper docstring format
+- Direct field access pattern (no defensive programming)
+- Consistent output formatting
 
 ## API Reference
 
@@ -184,11 +201,24 @@ For complete API documentation, see the main project README and function docstri
 
 To add new examples:
 
-1. Choose the appropriate category directory
-2. Create a descriptive filename (e.g., `custom_propagation.py`)
-3. Follow the established pattern: imports, configuration, execution, output
-4. Add clear comments explaining each step
-5. Include expected outputs or validation
+1. Copy `examples/TEMPLATE.py` as a starting point
+2. Choose the appropriate category directory
+3. Create a descriptive filename (e.g., `custom_propagation.py`)
+4. Follow the established pattern: imports, configuration, execution, output
+5. Add clear comments explaining each step
+6. Use direct field access (no `.get()` or `if in` checks)
+7. Include PEP 723 metadata at the top of the file
+
+See `docs/examples.md` for the complete authoring guide.
+
+## Workflows
+
+The `examples/workflows/` directory contains multi-step examples demonstrating
+how to chain multiple API calls for real-world use cases:
+
+- `satellite_pass_analysis.py` - Propagation → Access → Coverage workflow
+
+These show how to combine data from multiple API calls for mission analysis.
 
 ## Resources
 

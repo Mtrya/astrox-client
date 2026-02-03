@@ -37,7 +37,7 @@ def propagate_two_body(
 ) -> dict:
     """Propagate orbit using two-body dynamics.
 
-    Endpoint: POST /Propagator/Propagate/TwoBody
+    Endpoint: POST /Propagator/TwoBody
 
     Args:
         start: Analysis start time (UTCG)
@@ -99,7 +99,7 @@ def propagate_ballistic(
 ) -> dict:
     """Propagate ballistic trajectory.
 
-    Endpoint: POST /Propagator/Propagate/Ballistic
+    Endpoint: POST /Propagator/Ballistic
 
     Args:
         start: Launch time (UTCG)
@@ -224,7 +224,7 @@ def propagate_sgp4(
 ) -> dict:
     """Propagate orbit using SGP4 model.
 
-    Endpoint: POST /Propagator/Propagate/SGP4
+    Endpoint: POST /Propagator/SGP4
 
     Args:
         start: Analysis start time (UTCG)
@@ -270,7 +270,7 @@ def propagate_simple_ascent(
 ) -> dict:
     """Propagate simple ascent trajectory.
 
-    Endpoint: POST /Propagator/Propagate/SimpleAscent
+    Endpoint: POST /Propagator/SimpleAscent
 
     Args:
         start: Launch time (UTCG)
@@ -331,7 +331,7 @@ def propagate_hpop(
 ) -> dict:
     """Propagate orbit using high-precision orbit propagator (HPOP).
 
-    Endpoint: POST /Propagator/Propagate/HPOP
+    Endpoint: POST /Propagator/HPOP
 
     Args:
         start: Analysis start time (UTCG)
@@ -396,7 +396,7 @@ def propagate_j2_batch(
 ) -> dict:
     """Propagate multiple satellites using J2 perturbation to same epoch.
 
-    Endpoint: POST /Propagator/Propagate/J2Batch
+    Endpoint: POST /Propagator/J2Batch
 
     Args:
         epoch: Output epoch time (UTCG)
@@ -429,7 +429,7 @@ def propagate_sgp4_batch(
 ) -> dict:
     """Propagate multiple satellites using SGP4 to same epoch.
 
-    Endpoint: POST /Propagator/Propagate/SGP4Batch
+    Endpoint: POST /Propagator/SGP4Batch
 
     Args:
         epoch: Output epoch time (UTCG)
@@ -457,7 +457,7 @@ def propagate_two_body_batch(
 ) -> dict:
     """Propagate multiple satellites using two-body dynamics to same epoch.
 
-    Endpoint: POST /Propagator/Propagate/TwoBodyBatch
+    Endpoint: POST /Propagator/TwoBodyBatch
 
     Args:
         epoch: Output epoch time (UTCG)

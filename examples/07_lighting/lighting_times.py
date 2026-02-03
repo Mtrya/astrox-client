@@ -64,99 +64,75 @@ def main():
     print("-" * 70)
 
     # Process sunlight intervals
-    if result["SunLight"]:
-        sunlight = result["SunLight"]
-        if "Intervals" in sunlight and sunlight["Intervals"]:
-            intervals = sunlight["Intervals"]
-            print()
-            print(f"SUNLIGHT INTERVALS ({len(intervals)} periods):")  # Example: 2 periods
-            print("-" * 70)
+    sunlight = result["SunLight"]
+    intervals = sunlight["Intervals"]
+    print()
+    print(f"SUNLIGHT INTERVALS ({len(intervals)} periods):")  # Example: 2 periods
+    print("-" * 70)
 
-            total_sunlight = 0.0
-            for i, interval in enumerate(intervals, 1):
-                if isinstance(interval, dict):
-                    start_time = interval["Start"]
-                    stop_time = interval["Stop"]
-                    duration = interval["Duration"]
-                    total_sunlight += duration
+    total_sunlight = 0.0
+    for i, interval in enumerate(intervals, 1):
+        start_time = interval["Start"]
+        stop_time = interval["Stop"]
+        duration = interval["Duration"]
+        total_sunlight += duration
 
-                    print(f"  Period {i}:")
-                    print(f"    Start:    {start_time}")
-                    print(f"    Stop:     {stop_time}")
-                    print(f"    Duration: {duration/3600:.2f} hours")  # typically ~11.37 (period 1), ~11.43 (period 2)
-                else:
-                    print(f"  Period {i}: {interval} (not a dict)")
+        print(f"  Period {i}:")
+        print(f"    Start:    {start_time}")
+        print(f"    Stop:     {stop_time}")
+        print(f"    Duration: {duration/3600:.2f} hours")  # typically ~11.37 (period 1), ~11.43 (period 2)
 
-            print(f"\n  Total Sunlight: {total_sunlight/3600:.2f} hours "
-                  f"({100*total_sunlight/86400:.1f}% of day)")  # Example: ~22.80 hours (95.0% of day)
+    print(f"\n  Total Sunlight: {total_sunlight/3600:.2f} hours "
+          f"({100*total_sunlight/86400:.1f}% of day)")  # Example: ~22.80 hours (95.0% of day)
 
-            # Show statistics if available
-            if "MinDuration" in sunlight:
-                min_dur = sunlight["MinDuration"]["Duration"]
-                print(f"  Minimum Duration: {min_dur/3600:.2f} hours")  # typically ~11.37 hours
-            if "MaxDuration" in sunlight:
-                max_dur = sunlight["MaxDuration"]["Duration"]
-                print(f"  Maximum Duration: {max_dur/3600:.2f} hours")  # typically ~11.43 hours
-            if "MeanDuration" in sunlight:
-                print(f"  Mean Duration: {sunlight['MeanDuration']/3600:.2f} hours")  # typically ~11.40 hours
-        else:
-            print("\nNo sunlight intervals found.")
+    # Show statistics
+    min_dur = sunlight["MinDuration"]["Duration"]
+    print(f"  Minimum Duration: {min_dur/3600:.2f} hours")  # typically ~11.37 hours
+    max_dur = sunlight["MaxDuration"]["Duration"]
+    print(f"  Maximum Duration: {max_dur/3600:.2f} hours")  # typically ~11.43 hours
+    print(f"  Mean Duration: {sunlight['MeanDuration']/3600:.2f} hours")  # typically ~11.40 hours
 
     # Process penumbra intervals
-    if result["Penumbra"]:
-        penumbra = result["Penumbra"]
-        if isinstance(penumbra, list) and penumbra:
-            print()
-            print(f"PENUMBRA INTERVALS ({len(penumbra)} periods):")
-            print("-" * 70)
+    penumbra = result["Penumbra"]
+    print()
+    print(f"PENUMBRA INTERVALS ({len(penumbra)} periods):")
+    print("-" * 70)
 
-            total_penumbra = 0.0
-            for i, interval in enumerate(penumbra, 1):
-                if isinstance(interval, dict):
-                    start_time = interval["Start"]
-                    stop_time = interval["Stop"]
-                    duration = interval["Duration"]
-                    total_penumbra += duration
+    total_penumbra = 0.0
+    for i, interval in enumerate(penumbra, 1):
+        start_time = interval["Start"]
+        stop_time = interval["Stop"]
+        duration = interval["Duration"]
+        total_penumbra += duration
 
-                    print(f"  Period {i}:")
-                    print(f"    Start:    {start_time}")
-                    print(f"    Stop:     {stop_time}")
-                    print(f"    Duration: {duration:.1f} seconds ({duration/60:.2f} minutes)")
-                else:
-                    print(f"  Period {i}: {interval}")
+        print(f"  Period {i}:")
+        print(f"    Start:    {start_time}")
+        print(f"    Stop:     {stop_time}")
+        print(f"    Duration: {duration:.1f} seconds ({duration/60:.2f} minutes)")
 
-            print(f"\n  Total Penumbra: {total_penumbra/60:.2f} minutes "
-                  f"({100*total_penumbra/86400:.1f}% of day)")
-        else:
-            print("\nNo penumbra intervals found.")
+    print(f"\n  Total Penumbra: {total_penumbra/60:.2f} minutes "
+          f"({100*total_penumbra/86400:.1f}% of day)")
 
     # Process umbra intervals
-    if result["Umbra"]:
-        umbra = result["Umbra"]
-        if isinstance(umbra, list) and umbra:
-            print()
-            print(f"UMBRA INTERVALS ({len(umbra)} periods):")
-            print("-" * 70)
+    umbra = result["Umbra"]
+    print()
+    print(f"UMBRA INTERVALS ({len(umbra)} periods):")
+    print("-" * 70)
 
-            total_umbra = 0.0
-            for i, interval in enumerate(umbra, 1):
-                if isinstance(interval, dict):
-                    start_time = interval["Start"]
-                    stop_time = interval["Stop"]
-                    duration = interval["Duration"]
-                    total_umbra += duration
+    total_umbra = 0.0
+    for i, interval in enumerate(umbra, 1):
+        start_time = interval["Start"]
+        stop_time = interval["Stop"]
+        duration = interval["Duration"]
+        total_umbra += duration
 
-                    print(f"  Period {i}:")
-                    print(f"    Start:    {start_time}")
-                    print(f"    Stop:     {stop_time}")
-                    print(f"    Duration: {duration/60:.2f} minutes")
-                else:
-                    print(f"  Period {i}: {interval}")
+        print(f"  Period {i}:")
+        print(f"    Start:    {start_time}")
+        print(f"    Stop:     {stop_time}")
+        print(f"    Duration: {duration/60:.2f} minutes")
 
-            print(f"\n  Total Umbra: {total_umbra/60:.2f} minutes "
-                  f"({100*total_umbra/86400:.1f}% of day)")
-        else:
-            print("\nNo umbra intervals found.")
+    print(f"\n  Total Umbra: {total_umbra/60:.2f} minutes "
+          f"({100*total_umbra/86400:.1f}% of day)")
 
     # Summary
     print()

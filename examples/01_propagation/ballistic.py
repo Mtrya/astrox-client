@@ -96,20 +96,6 @@ def main():
     print(f"  Ground range: {ground_range/1000:.1f} km")
     print(f"  Average velocity: {ground_range/duration_seconds:.0f} m/s")
 
-    print("\n" + "=" * 60)
-    print("Ballistic Trajectory Types:")
-    print("  - DeltaV: Specify initial velocity magnitude")
-    print("  - DeltaV_MinEcc: Minimum eccentricity trajectory")
-    print("  - ApogeeAlt: Specify maximum altitude (used here)")
-    print("  - TimeOfFlight: Specify flight duration")
-    print()
-    print("Applications:")
-    print("  - Suborbital space tourism (Blue Origin, Virgin Galactic)")
-    print("  - Sounding rockets for atmospheric research")
-    print("  - First stage recovery impact prediction")
-    print("  - Military trajectory analysis")
-    print("=" * 60)
-
 
 if __name__ == "__main__":
     main()

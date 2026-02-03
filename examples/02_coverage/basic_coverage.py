@@ -45,16 +45,15 @@ def demo_get_grid_points():
     result = get_grid_points(grid=global_grid, text="Global coverage grid")
     print(f"Grid type: Global")
     print(f"Resolution: 6.0°")
-    if result["IsSuccess"]:
-        points = result["Points"]
-        grid_points = points["GridPoints"]
-        print(f"Total grid points: {len(grid_points)}")
-        if grid_points:
-            # Show first few points
-            print(f"First point: Lat={grid_points[0]['Latitude']:.2f}°, "
-                  f"Lon={grid_points[0]['Longitude']:.2f}°")
-    else:
-        print(f"Error: {result['Message']}")
+    print(f"Success: {result['IsSuccess']}")
+    print(f"Message: {result['Message']}")
+
+    points = result["Points"]
+    grid_points = points["GridPoints"]
+    print(f"Total grid points: {len(grid_points)}")
+    # Show first few points
+    print(f"First point: Lat={grid_points[0]['Latitude']:.2f}°, "
+          f"Lon={grid_points[0]['Longitude']:.2f}°")
 
     # Example 2: Latitude bounds grid (mid-latitudes only)
     print("\n--- Latitude Bounds Grid (30°S to 60°N) ---")
@@ -72,12 +71,11 @@ def demo_get_grid_points():
     )
     print(f"Latitude range: -30° to 60°")
     print(f"Resolution: 5.0°")
-    if result["IsSuccess"]:
-        points = result["Points"]
-        grid_points = points["GridPoints"]
-        print(f"Total grid points: {len(grid_points)}")
-    else:
-        print(f"Error: {result['Message']}")
+    print(f"Success: {result['IsSuccess']}")
+
+    points = result["Points"]
+    grid_points = points["GridPoints"]
+    print(f"Total grid points: {len(grid_points)}")
 
     # Example 3: Lat/Lon bounds grid (specific region - China)
     print("\n--- Lat/Lon Bounds Grid (China region) ---")
@@ -95,12 +93,11 @@ def demo_get_grid_points():
     result = get_grid_points(grid=region_grid, text="China region grid")
     print(f"Region: 18°N-54°N, 73°E-135°E (China)")
     print(f"Resolution: 2.0°")
-    if result["IsSuccess"]:
-        points = result["Points"]
-        grid_points = points["GridPoints"]
-        print(f"Total grid points: {len(grid_points)}")
-    else:
-        print(f"Error: {result['Message']}")
+    print(f"Success: {result['IsSuccess']}")
+
+    points = result["Points"]
+    grid_points = points["GridPoints"]
+    print(f"Total grid points: {len(grid_points)}")
 
 
 def demo_compute_coverage():
@@ -226,41 +223,36 @@ def demo_compute_coverage():
     )
 
     # Display results
-    if result["IsSuccess"]:
-        print("\n✓ Coverage computation successful!")
+    print(f"\nSuccess: {result['IsSuccess']}")
+    print(f"Message: {result['Message']}")
 
-        # Get coverage statistics
-        intervals = result["SatisfactionIntervalsWithNumberOfAssets"]
-        print(f"\nTotal grid points analyzed: {len(intervals)}")
+    # Get coverage statistics
+    intervals = result["SatisfactionIntervalsWithNumberOfAssets"]
+    print(f"\nTotal grid points analyzed: {len(intervals)}")
 
-        # Count covered points
-        covered_count = sum(
-            1 for point_intervals in intervals if point_intervals
-        )
-        coverage_percent = (
-            (covered_count / len(intervals) * 100) if intervals else 0
-        )
+    # Count covered points
+    covered_count = sum(
+        1 for point_intervals in intervals if point_intervals
+    )
+    coverage_percent = covered_count / len(intervals) * 100
 
-        print(f"Grid points with coverage: {covered_count}")
-        print(f"Coverage percentage: {coverage_percent:.2f}%")
+    print(f"Grid points with coverage: {covered_count}")
+    print(f"Coverage percentage: {coverage_percent:.2f}%")
 
-        # Show sample coverage intervals for first covered point
-        for i, point_intervals in enumerate(intervals):
-            if point_intervals:  # Found a covered point
-                print(f"\nSample: Grid point #{i} coverage intervals:")
-                for interval in point_intervals[:3]:  # Show first 3 intervals
-                    start = interval["Start"]
-                    stop = interval["Stop"]
-                    num_assets = interval["NumberOfAssets"]
-                    print(
-                        f"  - {start} to {stop} ({num_assets} satellite(s))"
-                    )
-                if len(point_intervals) > 3:
-                    print(f"  ... and {len(point_intervals) - 3} more intervals")
-                break  # Only show first covered point
-
-    else:
-        print(f"\n✗ Error: {result['Message']}")
+    # Show sample coverage intervals for first covered point
+    for i, point_intervals in enumerate(intervals):
+        if point_intervals:  # Found a covered point
+            print(f"\nSample: Grid point #{i} coverage intervals:")
+            for interval in point_intervals[:3]:  # Show first 3 intervals
+                start = interval["Start"]
+                stop = interval["Stop"]
+                num_assets = interval["NumberOfAssets"]
+                print(
+                    f"  - {start} to {stop} ({num_assets} satellite(s))"
+                )
+            if len(point_intervals) > 3:
+                print(f"  ... and {len(point_intervals) - 3} more intervals")
+            break  # Only show first covered point
 
 
 def demo_coverage_with_constraints():
@@ -320,27 +312,22 @@ def demo_coverage_with_constraints():
         contain_coverage_points=True,
     )
 
-    if result["IsSuccess"]:
-        print("\n✓ Coverage computation successful!")
+    print(f"\nSuccess: {result['IsSuccess']}")
+    print(f"Message: {result['Message']}")
 
-        intervals = result["SatisfactionIntervalsWithNumberOfAssets"]
-        covered_count = sum(
-            1 for point_intervals in intervals if point_intervals
-        )
-        coverage_percent = (
-            (covered_count / len(intervals) * 100) if intervals else 0
-        )
+    intervals = result["SatisfactionIntervalsWithNumberOfAssets"]
+    covered_count = sum(
+        1 for point_intervals in intervals if point_intervals
+    )
+    coverage_percent = covered_count / len(intervals) * 100
 
-        print(f"Total grid points: {len(intervals)}")
-        print(f"Covered points: {covered_count}")
-        print(f"Coverage: {coverage_percent:.2f}%")
+    print(f"Total grid points: {len(intervals)}")
+    print(f"Covered points: {covered_count}")
+    print(f"Coverage: {coverage_percent:.2f}%")
 
-        # Count total coverage passes
-        total_passes = sum(len(pi) for pi in intervals if pi)
-        print(f"Total access intervals: {total_passes}")
-
-    else:
-        print(f"\n✗ Error: {result['Message']}")
+    # Count total coverage passes
+    total_passes = sum(len(pi) for pi in intervals if pi)
+    print(f"Total access intervals: {total_passes}")
 
 
 def main():
