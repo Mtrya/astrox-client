@@ -1,4 +1,4 @@
-"""Example: Ballistic Trajectory Propagation
+"""Example: Ballistic Trajectory Propagation (Apogee Altitude)
 
 This example demonstrates ballistic trajectory calculation for suborbital
 flights, such as:
@@ -7,8 +7,8 @@ flights, such as:
 - Suborbital space tourism flights
 - Artillery trajectories
 
-We'll compute a ballistic trajectory from Cape Canaveral to a downrange
-impact point in the Atlantic Ocean.
+We'll compute a ballistic trajectory with apogee altitude shaping for a
+suborbital flight.
 """
 
 from astrox.propagator import propagate_ballistic
@@ -31,7 +31,7 @@ def main():
     print(f"Impact: ({impact_lat:.4f}°, {impact_lon:.4f}°) at {impact_alt} m")
     print()
 
-    # Compute trajectory with specified apogee altitude
+    # Compute trajectory with specified apogee altitude (ApogeeAlt type)
     # This is a medium-range ballistic trajectory
     result = propagate_ballistic(
         start="2024-01-01T12:00:00.000Z",

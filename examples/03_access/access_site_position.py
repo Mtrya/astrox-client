@@ -1,11 +1,14 @@
+# /// script
+# dependencies = ["astrox-client"]
+# requires-python = ">=3.10"
+# ///
 """
-Compute access between satellite and ground station.
+Compute access using SitePosition for ground station.
 
-This example demonstrates satellite-to-ground station access computation
-with sensor constraints and AER calculations.
+This example demonstrates access computation with a ground station entity
+using SitePosition (cartographic coordinates) for the ground station location.
 
-The API returns access windows (passes) with detailed Azimuth, Elevation,
-and Range (AER) data for each time step during the access interval.
+API: POST /api/Access/V2
 """
 
 from astrox.access import compute_access
@@ -18,12 +21,6 @@ from astrox.models import (
 
 
 def main():
-    """Compute satellite-to-ground station access with AER data."""
-    print("=" * 70)
-    print("Access Computation: Satellite to Ground Station")
-    print("=" * 70)
-    print()
-
     # Define analysis time window (24 hours)
     start = "2022-04-25T04:00:00Z"
     stop = "2022-04-26T04:00:00Z"
@@ -64,18 +61,15 @@ def main():
     )
 
     print(f"Analysis Period: {start} to {stop}")
-    print(f"Ground Station: {ground_station.Name}")  # Name='Cape_Canaveral'
-    print(f"  Location: {ground_station.Position.root.cartographicDegrees}")  # [-80.6039, 28.5729, 10.0]
-    print(f"Satellite: {satellite.Name}")  # Name='LEO_Satellite'
+    print(f"Ground Station: {ground_station.Name}")
+    print(f"  Location: {ground_station.Position.root.cartographicDegrees}")
+    print(f"Satellite: {satellite.Name}")
     print(f"  Orbit: LEO (300km altitude, 28.5° inclination)")
-    if satellite.Sensor:
-        print(f"  Sensor: {satellite.Sensor.root.Text} ({satellite.Sensor.root.outerHalfAngle}° cone)")  # Text='Camera', outerHalfAngle=30.0
+    print(f"  Sensor: {satellite.Sensor.root.Text} ({satellite.Sensor.root.outerHalfAngle}° cone)")
     print()
 
     # Compute access with AER parameters
     print("Computing access windows...")
-    # The API returns access passes with AER data (azimuth, elevation, range)
-    # Endpoint: POST /access/AccessComputeV2
     result = compute_access(
         start=start,
         stop=stop,
@@ -86,31 +80,30 @@ def main():
     )
 
     # Display results
-    # Based on actual API response: {'Passes': [{'AccessStart': str, 'AccessStop': str, 'Duration': float, 'AllDatas': [...]}, ...]}
     print()
     print("Access Results:")
     print("-" * 70)
 
     access_intervals = result["Passes"]
-    print(f"Total Access Intervals: {len(access_intervals)}")  # e.g., 1
+    print(f"Total Access Intervals: {len(access_intervals)}")
     print()
 
     for i, interval in enumerate(access_intervals, 1):
         print(f"Access Window {i}:")
-        print(f"  Start: {interval['AccessStart']}")  # e.g., '2022-04-25T16:07:55.725Z'
-        print(f"  Stop:  {interval['AccessStop']}")   # e.g., '2022-04-25T16:07:59.021Z'
-        print(f"  Duration: {interval['Duration']:.2f} seconds")  # e.g., 3.30
+        print(f"  Start: {interval['AccessStart']}")
+        print(f"  Stop:  {interval['AccessStop']}")
+        print(f"  Duration: {interval['Duration']:.2f} seconds")
 
         # AccessAER data points (if compute_aer=True)
         aer_data = interval["AllDatas"]
-        print(f"  AER Data Points: {len(aer_data)}")  # e.g., 2
+        print(f"  AER Data Points: {len(aer_data)}")
 
         # Show first and last AER data point
         first = aer_data[0]
         print(f"    First: Time={first['Time']}, "
-              f"Az={first['Azimuth']:.2f}°, "     # e.g., 170.66°
-              f"El={first['Elevation']:.2f}°, "   # e.g., -0.10°
-              f"Range={first['Range']/1000:.2f}km")  # e.g., 1988.29km
+              f"Az={first['Azimuth']:.2f}°, "
+              f"El={first['Elevation']:.2f}°, "
+              f"Range={first['Range']/1000:.2f}km")
 
         if len(aer_data) > 1:
             last = aer_data[-1]
@@ -127,4 +120,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
